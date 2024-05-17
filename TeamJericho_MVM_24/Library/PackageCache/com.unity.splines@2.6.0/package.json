@@ -1,0 +1,40 @@
+{
+  "name": "com.unity.splines",
+  "displayName": "Splines",
+  "version": "2.6.0",
+  "unity": "2022.3",
+  "description": "Work with curves and paths. Use the Splines package to generate objects and behaviors along paths, create trajectories, and draw shapes.",
+  "dependencies": {
+    "com.unity.settings-manager": "1.0.3",
+    "com.unity.mathematics": "1.2.1",
+    "com.unity.ugui": "1.0.0"
+  },
+  "samples": [
+    {
+      "displayName": "Spline Examples (requires Shader Graph package)",
+      "description": "Example code and scenes files showing how to use Splines.",
+      "path": "Samples~/"
+    }
+  ],
+  "keywords": [
+    "spline",
+    "curve",
+    "path"
+  ],
+  "category": "Tool",
+  "type": "tool",
+  "relatedPackages": {
+    "com.unity.splines.tests": "2.6.0"
+  },
+  "_upm": {
+    "changelog": "### Added\n\n- Added new APIs that enable users to directly provide a collection of `float3` knot positions to a `Spline` constructor, or to the new `Add`, `AddRange`, `Insert`, and `InsertRange` methods, instead of using `BezierKnots`.\n- Added an event to the `SplineAnimate` component that is triggered when the animation or loop is completed.\n\n### Changed\n\n- Changed supported version in the documentation dropdown selector to 2022.3 and later. \n\n### Bug Fixes\n\n- [SPLB-246] Fixed performance and garbage collection (GC) memory allocation issues when evaluating splines using `SplineContainer` API.\n- [STO-3176] Fixed an issue where `FitSplineToPoints` utility would not fit splines correctly.\n- [SPLB-249] Fixed a bug where setting a spline game object position was overridden by the knot placement tool.\n- Fixed a bug where using the knot placement tool on scaled objects would not create the correct tangents.\n- Fixed a bug where changing the scale of a spline game object would not update the scene view handles.\n- [SPLB-239] Fixed a bug where reverting overrides of a spline prefab instance would not properly update its visuals.\n- [SPLB-238] Fixed a bug where `SplineAnimate` component would continuously output messages to the Console when in playmode and animated object was selected.\n- [SPLB-245] Fixed a bug where `SplineAnimate` component would rotate the animated object on playmode exit."
+  },
+  "upmCi": {
+    "footprint": "196370dfa5851ee63bdaedfc0f098511a7c12301"
+  },
+  "repository": {
+    "url": "https://github.cds.internal.unity3d.com/unity/com.unity.splines.git",
+    "type": "git",
+    "revision": "65b428969b9590a4e35cee1c042a490669555e17"
+  }
+}
