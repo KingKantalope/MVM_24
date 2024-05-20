@@ -8,7 +8,8 @@ public class HandheldAmmoCounter : HandheldDisplay
     [Header("additional stuff")]
     [SerializeField] private Color unavailableColor;
     [SerializeField] private Color warningUnavailableColor;
-    [SerializeField] private Image[] ammoImages;
+    [SerializeField] private Image resourceBar;
+    [SerializeField] private Image resourceBarBackground;
 
     // Start is called before the first frame update
     void Start()
@@ -24,89 +25,61 @@ public class HandheldAmmoCounter : HandheldDisplay
 
     public override void SetResourceAmount(int available, int maxAvailable, float lowThreshold)
     {
-        for (int i = 0; i < maxAvailable; i++)
+        float barAmount = (float)available / (float)maxAvailable;
+
+        resourceBar.fillAmount = barAmount;
+
+        if (barAmount > lowThreshold)
         {
-            if (((float)available / (float)maxAvailable) > lowThreshold)
-            {
-                // set color to defaultColor
-                resourceDivider.color = defaultColor;
-                infiniteAmmo.color = defaultColor;
+            // set color to defaultColor
+            resourceBar.color = defaultColor;
+            resourceBarBackground.color = unavailableColor;
 
-                // stop warning indicator animation
-                // warningHazeAnimator.SetBool("Active", false);
+            // stop warning indicator animation
+            warningHazeAnimator.SetBool("Active", false);
+        }
+        else
+        {
+            // set color to warningColor
+            resourceBar.color = warningColor;
+            resourceBarBackground.color = warningUnavailableColor;
 
-                if (i + 1 <= available)
-                {
-                    ammoImages[i].color = defaultColor;
-                }
-                else
-                {
-                    ammoImages[i].color = unavailableColor;
-                }
-            }
-            else
-            {
-                // set color to warningColor
-                resourceDivider.color = warningColor;
-                infiniteAmmo.color = warningColor;
-
-                // start warning indicator animation
-                // warningHazeAnimator.SetBool("Active", true);
-
-                if (i + 1 <= available)
-                {
-                    ammoImages[i].color = warningColor;
-                }
-                else
-                {
-                    ammoImages[i].color = warningUnavailableColor;
-                }
-            }
+            // start warning indicator animation
+            warningHazeAnimator.SetBool("Active", true);
         }
     }
 
-    public override void SetResourceAmount(int available, int maxAvailable, float lowThreshold, int reserves)
+    public override void SetResourceAmount(int available, int maxAvailable, float lowThreshold, int reserves, int reservesThreshold)
     {
         reserveResourceText.text = reserves.ToString();
 
-        for (int i = 0; i < maxAvailable; i++)
+        float barAmount = (float)available / (float)maxAvailable;
+
+        resourceBar.fillAmount = barAmount;
+
+        if (reserves > reservesThreshold) resourceBackground.color = backgroundColor;
+        else resourceBackground.color = warningColor;
+
+        if (barAmount > lowThreshold)
         {
-            if (((float)available/ (float)maxAvailable) > lowThreshold)
-            {
-                // set color to defaultColor
-                reserveResourceText.color = defaultColor;
-                resourceDivider.color = defaultColor;
+            // set color to defaultColor
+            resourceBackground.color = backgroundColor;
+            resourceBar.color = defaultColor;
+            resourceBarBackground.color = unavailableColor;
 
-                // stop warning indicator animation
-                // warningHazeAnimator.SetBool("Active", false);
+            // stop warning indicator animation
+            warningHazeAnimator.SetBool("Active", false);
+        }
+        else
+        {
+            // set color to warningColor
+            resourceBackground.color = warningColor;
+            resourceBackground.color = warningColor;
+            resourceBar.color = warningColor;
+            resourceBarBackground.color = warningUnavailableColor;
 
-                if (i + 1 <= available)
-                {
-                    ammoImages[i].color = defaultColor;
-                }
-                else
-                {
-                    ammoImages[i].color = unavailableColor;
-                }
-            }
-            else
-            {
-                // set color to warningColor
-                reserveResourceText.color = warningColor;
-                resourceDivider.color = warningColor;
-
-                // start warning indicator animation
-                // warningHazeAnimator.SetBool("Active", true);
-
-                if (i + 1 <= available)
-                {
-                    ammoImages[i].color = warningColor;
-                }
-                else
-                {
-                    ammoImages[i].color = warningUnavailableColor;
-                }
-            }
+            // start warning indicator animation
+            warningHazeAnimator.SetBool("Active", true);
         }
     }
 }

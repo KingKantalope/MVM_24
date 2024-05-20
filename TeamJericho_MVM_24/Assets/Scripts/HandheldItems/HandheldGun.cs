@@ -62,6 +62,7 @@ public class HandheldGun : MonoBehaviour, IHandheldObject
     [SerializeField] private int startingMagSize;
     [SerializeField] private int maxReserves;
     [SerializeField] private int startingReserves;
+    [SerializeField] private int reservesThreshold;
     [SerializeField] private float lowThreshold;
     protected int magCurrent;
     protected int reservesCurrent;
@@ -126,7 +127,7 @@ public class HandheldGun : MonoBehaviour, IHandheldObject
         }
         else
         {
-            ammoDisplay.SetResourceAmount(magCurrent, magSize, lowThreshold, reservesCurrent);
+            ammoDisplay.SetResourceAmount(magCurrent, magSize, lowThreshold, reservesCurrent, reservesThreshold);
         }
     }
 
@@ -362,7 +363,7 @@ public class HandheldGun : MonoBehaviour, IHandheldObject
         }
         else
         {
-            ammoDisplay.SetResourceAmount(magCurrent, magSize, lowThreshold, reservesCurrent);
+            ammoDisplay.SetResourceAmount(magCurrent, magSize, lowThreshold, reservesCurrent, reservesThreshold);
         }
 
         // increase spread
@@ -474,7 +475,7 @@ public class HandheldGun : MonoBehaviour, IHandheldObject
         }
         else
         {
-            ammoDisplay.SetResourceAmount(magCurrent, magSize, lowThreshold, reservesCurrent);
+            ammoDisplay.SetResourceAmount(magCurrent, magSize, lowThreshold, reservesCurrent, reservesThreshold);
         }
     }
 

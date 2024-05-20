@@ -55,7 +55,7 @@ public class PlayerMove : MonoBehaviour
     {
         wantToJump = context.ReadValueAsButton();
 
-        if (grounded) Jump();
+        if (grounded && wantToJump) Jump();
     }
     public void OnCrouch(InputAction.CallbackContext context)
     {

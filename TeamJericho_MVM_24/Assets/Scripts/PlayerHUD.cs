@@ -26,6 +26,7 @@ public class PlayerHUD : MonoBehaviour
     [Header("General Details")]
     [SerializeField] private RectTransform canvas;
     [SerializeField] private Color defaultColor;
+    [SerializeField] private Color reticleColor;
     [SerializeField] private Color friendlyColor;
     [SerializeField] private Color enemyColor;
     [SerializeField] private RectTransform MainHUDParent;
@@ -38,6 +39,20 @@ public class PlayerHUD : MonoBehaviour
     [SerializeField] private Image secondStowedHandheld;
     [SerializeField] private GameObject defaultDisplay;
     [SerializeField] private GameObject defaultReticle;
+    [SerializeField] private Image healthBar;
+    [SerializeField] private Image healthBarBackground;
+    [SerializeField] private Color healthColor;
+    [SerializeField] private Color healthBackgroundColor;
+    [SerializeField] private Color LowColor;
+    [SerializeField] private Color LowBackgroundColor;
+    [SerializeField] private Image armorBar;
+    [SerializeField] private Image armorBarBackground;
+    [SerializeField] private Color armorColor;
+    [SerializeField] private Color armorBackgroundColor;
+    [SerializeField] private Image shieldBar;
+    [SerializeField] private Image shieldBarBackground;
+    [SerializeField] private Color shieldColor;
+    [SerializeField] private Color shieldBackgroundColor;
 
     // Start is called before the first frame update
     void Start()
@@ -96,7 +111,7 @@ public class PlayerHUD : MonoBehaviour
         handheldObject.OnAttachedDisplay(displayToReturn);
         displayToReturn.OnAttachedDisplay(defaultColor);
         handheldObject.OnAttachedReticle(reticleToReturn);
-        reticleToReturn.OnCreateReticle(defaultColor, enemyColor, friendlyColor);
+        reticleToReturn.OnCreateReticle(reticleColor, enemyColor, friendlyColor);
     }
 
     public virtual void SetCritIndicator(bool isCrit)
@@ -142,6 +157,51 @@ public class PlayerHUD : MonoBehaviour
                 break;
             case HandheldSlot.Pickup:
                 break;
+        }
+    }
+
+    public void SetHitpoints(float shieldsCurrent, float shieldsMax,
+        float armorCurrent, float armorMax, float healthCurrent, float healthMax, int armorLevel)
+    {
+        float shieldRatio = shieldsCurrent / shieldsMax;
+        float armorRatio = armorCurrent / armorMax;
+        float healthRatio = healthCurrent / healthMax;
+
+        shieldBar.fillAmount = shieldRatio;
+        armorBar.fillAmount = armorRatio;
+        healthBar.fillAmount = healthRatio;
+
+        if (healthRatio < 0.35)
+        {
+            healthBar.color = LowColor;
+            healthBarBackground.color = LowBackgroundColor;
+        }
+        else
+        {
+            healthBar.color = healthColor;
+            healthBarBackground.color = healthBackgroundColor;
+        }
+
+        if (armorRatio < 0.35)
+        {
+            armorBar.color = LowColor;
+            armorBarBackground.color = LowBackgroundColor;
+        }
+        else
+        {
+            armorBar.color = armorColor;
+            armorBarBackground.color = armorBackgroundColor;
+        }
+
+        if (shieldRatio < 0.35)
+        {
+            shieldBar.color = LowColor;
+            shieldBarBackground.color = LowBackgroundColor;
+        }
+        else
+        {
+            shieldBar.color = shieldColor;
+            shieldBarBackground.color = shieldBackgroundColor;
         }
     }
 }

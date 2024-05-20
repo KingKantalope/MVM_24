@@ -8,9 +8,10 @@ public class HandheldDisplay : MonoBehaviour
     [Header("Resource Text")]
     [SerializeField] protected Text currentResourceText;
     [SerializeField] protected Text reserveResourceText;
-    [SerializeField] protected Image resourceDivider;
+    [SerializeField] protected Image resourceBackground;
     [SerializeField] protected Image infiniteAmmo;
     [SerializeField] protected Color defaultColor;
+    [SerializeField] protected Color backgroundColor;
     protected int maxResource;
 
     [Header("Low Resource Indicator")]
@@ -44,7 +45,7 @@ public class HandheldDisplay : MonoBehaviour
             // set color to warningColor
             currentResourceText.color = warningColor;
             reserveResourceText.color = warningColor;
-            resourceDivider.color = warningColor;
+            resourceBackground.color = warningColor;
 
             // start warning indicator animation
             warningHazeAnimator.SetBool("Active", true);
@@ -54,24 +55,26 @@ public class HandheldDisplay : MonoBehaviour
             // set color to defaultColor
             currentResourceText.color = warningColor;
             reserveResourceText.color = warningColor;
-            resourceDivider.color = warningColor;
+            resourceBackground.color = warningColor;
 
             // stop warning indicator animation
             warningHazeAnimator.SetBool("Active", false);
         }
     }
 
-    public virtual void SetResourceAmount(int available, int maxAvailable, float lowThreshold, int reserves)
+    public virtual void SetResourceAmount(int available, int maxAvailable, float lowThreshold, int reserves, int reservesThreshold)
     {
         currentResourceText.text = available.ToString();
         reserveResourceText.text = reserves.ToString();
+        
+        if (reserves > reservesThreshold) resourceBackground.color = backgroundColor;
+        else resourceBackground.color = warningColor;
 
         if ((available / maxAvailable) <= lowThreshold)
         {
             // set color to warningColor
-            currentResourceText.color = warningColor;
             reserveResourceText.color = warningColor;
-            resourceDivider.color = warningColor;
+            resourceBackground.color = warningColor;
 
             // start warning indicator animation
             warningHazeAnimator.SetBool("Active", true);
@@ -79,9 +82,8 @@ public class HandheldDisplay : MonoBehaviour
         else
         {
             // set color to defaultColor
-            currentResourceText.color = warningColor;
-            reserveResourceText.color = warningColor;
-            resourceDivider.color = warningColor;
+            reserveResourceText.color = defaultColor;
+            resourceBackground.color = defaultColor;
 
             // stop warning indicator animation
             warningHazeAnimator.SetBool("Active", false);
