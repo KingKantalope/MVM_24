@@ -1,0 +1,10 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Actor : MonoBehaviour
+{
+    private string actorID;
+
+    public string GetID() { return actorID; }
+}
