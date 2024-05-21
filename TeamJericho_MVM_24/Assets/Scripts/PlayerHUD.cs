@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class PlayerHUD : MonoBehaviour
 {
@@ -25,26 +26,34 @@ public class PlayerHUD : MonoBehaviour
 
     [Header("General Details")]
     [SerializeField] private RectTransform canvas;
+
     [SerializeField] private Color defaultColor;
     [SerializeField] private Color reticleColor;
     [SerializeField] private Color friendlyColor;
     [SerializeField] private Color enemyColor;
+
     [SerializeField] private RectTransform MainHUDParent;
     [SerializeField] private RectTransform ReticleParent;
     [SerializeField] private RectTransform OtherHUDParent;
     [SerializeField] private RectTransform ammoCounterParent;
+
     [SerializeField] private Image critIndicator;
+
     [SerializeField] private Image activeHandheld;
+
     [SerializeField] private Image firstStowedHandheld;
     [SerializeField] private Image secondStowedHandheld;
+
     [SerializeField] private GameObject defaultDisplay;
     [SerializeField] private GameObject defaultReticle;
+
     [SerializeField] private Image healthBar;
     [SerializeField] private Image healthBarBackground;
     [SerializeField] private Color healthColor;
     [SerializeField] private Color healthBackgroundColor;
-    [SerializeField] private Color LowColor;
-    [SerializeField] private Color LowBackgroundColor;
+    [SerializeField] private Color lowColor;
+    [SerializeField] private Color lowBackgroundColor;
+    [SerializeField] private TMP_Text armorLevelText;
     [SerializeField] private Image armorBar;
     [SerializeField] private Image armorBarBackground;
     [SerializeField] private Color armorColor;
@@ -163,6 +172,8 @@ public class PlayerHUD : MonoBehaviour
     public void SetHitpoints(float shieldsCurrent, float shieldsMax,
         float armorCurrent, float armorMax, float healthCurrent, float healthMax, int armorLevel)
     {
+        armorLevelText.text = armorLevel.ToString();
+
         float shieldRatio = shieldsCurrent / shieldsMax;
         float armorRatio = armorCurrent / armorMax;
         float healthRatio = healthCurrent / healthMax;
@@ -173,8 +184,8 @@ public class PlayerHUD : MonoBehaviour
 
         if (healthRatio < 0.35)
         {
-            healthBar.color = LowColor;
-            healthBarBackground.color = LowBackgroundColor;
+            healthBar.color = lowColor;
+            healthBarBackground.color = lowBackgroundColor;
         }
         else
         {
@@ -184,8 +195,8 @@ public class PlayerHUD : MonoBehaviour
 
         if (armorRatio < 0.35)
         {
-            armorBar.color = LowColor;
-            armorBarBackground.color = LowBackgroundColor;
+            armorBar.color = lowColor;
+            armorBarBackground.color = lowBackgroundColor;
         }
         else
         {
@@ -195,8 +206,8 @@ public class PlayerHUD : MonoBehaviour
 
         if (shieldRatio < 0.35)
         {
-            shieldBar.color = LowColor;
-            shieldBarBackground.color = LowBackgroundColor;
+            shieldBar.color = lowColor;
+            shieldBarBackground.color = lowBackgroundColor;
         }
         else
         {
