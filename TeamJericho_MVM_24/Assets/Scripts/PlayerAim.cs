@@ -23,6 +23,7 @@ public class PlayerAim : MonoBehaviour
     private float gamepadFriction, gamepadMagnetism;
     private float mouseFriction, mouseMagnetism;
     private bool stickAim;
+    private bool aimLocked = false;
 
     // zooming
     private float targetZoom = 1;
@@ -47,6 +48,11 @@ public class PlayerAim : MonoBehaviour
     public void OnGamepadLook(InputAction.CallbackContext context)
     {
         gamepadLook = context.ReadValue<Vector2>();
+    }
+
+    public void OnPlayerClimb(bool isClimbing)
+    {
+        aimLocked = isClimbing;
     }
 
     private void Start()
@@ -75,9 +81,12 @@ public class PlayerAim : MonoBehaviour
 
     private void LateUpdate()
     {
-        GamepadLookAcceleration();
-        AimMagnetism();
-        Look();
+        if (!aimLocked)
+        {
+            GamepadLookAcceleration();
+            AimMagnetism();
+            Look();
+        }
     }
 
     private void SetTargetZoom(float target, float speed)

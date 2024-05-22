@@ -14,7 +14,7 @@ public class PlayerMove : MonoBehaviour
     private Rigidbody rb;
     private CapsuleCollider playerCollider;
     private Vector3 playerVelocity;
-    private bool grounded;
+    private bool grounded = false;
     private bool canClimb;
     private bool crouching;
     private float slopeAngle;
@@ -22,17 +22,20 @@ public class PlayerMove : MonoBehaviour
     private Vector3 wallNormal;
     private float wallAngle;
     private float distToGround;
+    private List<Collision> collisions;
+    private Vector3 NetNormal = Vector3.zero;
 
-    public float playerSpeed = 5.0f;
-    public float playerAccel = 20.0f;
+    public float playerSpeed = 5.5f;
+    public float playerAccel = 40.0f;
     public float crouchSpeed = 3.25f;
     public float crouchAccel = 13.0f;
-    public float minVelocity = 0.001f;
+    public float minVelocity = 0.4f;
     public float airAccel = 3.0f;
     public float jumpHeight = 2.0f;
     public float jumpCrouchMulti = 0.5f;
     public float defaultGravity = -10.0f;
     public float maxSlopeAngle = 45.0f;
+    public float normalForce = 0.1f;
     public LayerMask whatIsGround = LayerMask.GetMask("Ground");
 
     // climbing
@@ -40,6 +43,7 @@ public class PlayerMove : MonoBehaviour
     public float minClimbAngle = 75.0f;
     public float maxClimbAngle = 105.0f;
     public LayerMask whatIsClimbable = LayerMask.GetMask("Climbable");
+    private bool isClimbing = false;
 
     private Vector2 moveInput;
     private bool wantToJump;
@@ -54,7 +58,7 @@ public class PlayerMove : MonoBehaviour
     public void OnJump(InputAction.CallbackContext context)
     {
         wantToJump = context.ReadValueAsButton();
-
+        
         if (grounded && wantToJump) Jump();
     }
     public void OnCrouch(InputAction.CallbackContext context)
@@ -67,6 +71,7 @@ public class PlayerMove : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        collisions = new List<Collision>();
         rb = GetComponent<Rigidbody>();
         playerCollider = GetComponent<CapsuleCollider>();
         rb.sleepThreshold = minVelocity;
@@ -79,11 +84,23 @@ public class PlayerMove : MonoBehaviour
         FindClimbWall();
         if (wantToJump && canClimb)
         {
+            if (!isClimbing)
+            {
+                isClimbing = true;
+                OnPlayerClimb?.Invoke(true);
+            }
+
             Climb();
         }
         else
         {
-            FindGround();
+            if (isClimbing)
+            {
+                isClimbing = false;
+                OnPlayerClimb?.Invoke(false);
+            }
+
+            NewFindGround();
             LateralMove();
             VerticalMove();
         }
@@ -115,33 +132,51 @@ public class PlayerMove : MonoBehaviour
         // Debug.Log("Cannot Climb!!!!!!!!!!!!");
     }
 
-    private void FindGround()
+    private void OnCollisionStay(Collision collision)
     {
-        // raycast to find ground
+        collisions.Add(collision);
+    }
+
+    private void NewFindGround()
+    {
+        // get all contact points with collider, find all with hits with a slope below minimum, average them
+        Vector3 NetNormal = Vector3.zero;
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, -transform.up, out hit, (playerCollider.height / 2) + 0.2f, whatIsGround))
+        grounded = false;
+
+        if (collisions.Count > 0)
         {
-            // save normal of surface
-            slopeNormal = hit.normal;
-
-            // get slope angle
-            slopeAngle = Vector3.Angle(Vector3.up, hit.normal);
-
-            // check slope angle
-            if (slopeAngle <= maxSlopeAngle)
+            foreach (var collision in collisions)
             {
-                grounded = true;
-                return;
+                foreach (var contact in collision.contacts)
+                {
+                    if (Physics.Raycast(transform.position, contact.point - transform.position, out hit,
+                        1.1f * Vector3.Distance(contact.point, transform.position), whatIsGround))
+                    {
+                        if (Vector3.Angle(Vector3.up, hit.normal) < maxSlopeAngle)
+                        {
+                            NetNormal += hit.normal;
+                        }
+                    }
+                }
             }
         }
 
-        // update this to get all contacts with rigidbody of 45° angle or less steepness
-        // average them all out to get proper move vector without relying on being perfectly center
-        // should require player to be literally touching ground to be grounded
-        
-        grounded = false;
+        // raycast to find ground
+        if (Physics.Raycast(transform.position, -transform.up, out hit, (playerCollider.height / 2) + 0.2f, whatIsGround))
+        {
+            // save normal of surface
+            NetNormal += hit.normal;
+        }
 
-        // Debug.Log("Not Grounded!!!!!!!!!!!!");
+        if (NetNormal != Vector3.zero)
+        {
+            grounded = true;
+            slopeNormal = NetNormal.normalized;
+            slopeAngle = Vector3.Angle(Vector3.up, slopeNormal);
+        }
+
+        collisions.Clear();
     }
 
     private void LateralMove()
@@ -164,6 +199,10 @@ public class PlayerMove : MonoBehaviour
 
             velocityChange = (TargetVelocity - LateralVelocity).normalized;
             velocityChange *= (crouching ? crouchAccel : playerAccel) * Time.fixedDeltaTime;
+
+            if (velocityChange.y > 0f) velocityChange.y = 0f;
+
+            velocityChange -= slopeNormal.normalized * normalForce;
 
             // change move velocity
             if (rb.velocity.magnitude >= minVelocity || moveInput != Vector2.zero) rb.AddForce(velocityChange, ForceMode.VelocityChange);
