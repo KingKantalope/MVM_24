@@ -5,7 +5,7 @@ using UnityEngine;
 
 public interface IDamageable
 {
-    HitpointType MainDamage(Damage damage);
+    DamageEnd MainDamage(Damage damage);
     void OffsetPoise(int stagger);
     void OffsetRadiation(int radiation);
     void OffsetFrost(int frost);
@@ -27,11 +27,13 @@ public enum Hemorrhage
     size
 }
 
-public enum HitpointType
+public enum DamageEnd
 {
     health,
     armor,
     shields,
+    kill,
+    crit,
     none
 }
 
@@ -41,7 +43,6 @@ public struct Damage
     public float baseDamage;
     public float shieldMulti;
     public float armorMulti;
-    public float healthMulti;
     public float critMulti;
     public int penetrationLevel;
     public bool isCrit;

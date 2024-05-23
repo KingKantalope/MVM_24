@@ -6,6 +6,7 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
 {
     [SerializeField] private Actor thisActor;
 
+    #region Variables
     [Header("Shields Hitpoints")]
     [SerializeField] private float startingShields;
     [SerializeField] private float maxShields;
@@ -79,6 +80,7 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
     private bool isShocked;
 
     private bool hasDied;
+    #endregion Variables
 
     // Start is called before the first frame update
     void Start()
@@ -221,7 +223,76 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
     /* All colliders that can receive damage relays all their data to this script.
      * Logic is handled here, all other relevant scripts reference this in order to grab modifiers.
      */
+    public DamageEnd MainDamage(Damage damage)
+    {
+        // reset shield timer
+        rechargeTime = rechargeDelay;
 
+        // process damage
+        float processedDamage = damage.baseDamage * damage.shieldMulti;
+        float outcomeDamage = processedDamage - currentShields;
+        float damageRatio = 0f;
+
+        // shield damage
+        if (outcomeDamage > 0f)
+        {
+            // break shields, get damage prior to armor adjustments
+            damageRatio += outcomeDamage / (processedDamage + outcomeDamage);
+            processedDamage = damage.baseDamage * damageRatio;
+            currentShields = 0f;
+
+            // get level of penetration and adjust base damage accordingly
+            int armorDifference = damage.penetrationLevel - protectionLevel + armorWeakening;
+            armorDifference += damage.isCrit? damage.critBonus : 0;
+
+            // get damage to armor and additional health damage
+            float penetrationDamage = Mathf.Clamp(processedDamage * armorDifference * 0.25f, 0f, processedDamage * 0.75f);
+            processedDamage = Mathf.Clamp(processedDamage * (1 - armorDifference) * 0.25f,processedDamage * 0.25f, processedDamage);
+
+            // adjust to armor
+            processedDamage *= damage.armorMulti;
+            outcomeDamage = currentArmor - processedDamage;
+
+            // armor damage
+            if (outcomeDamage > 0f || penetrationDamage > 0f)
+            {
+                // break armor, get damage
+                damageRatio += outcomeDamage / (processedDamage + outcomeDamage);
+                processedDamage = damage.baseDamage * damageRatio + penetrationDamage;
+                currentArmor = 0f;
+
+                if (damage.isCrit) processedDamage *= damage.critMulti;
+
+                // health damage
+                if (processedDamage > currentHealth)
+                {
+                    currentHealth = 0f;
+                    OnDeath();
+                    return DamageEnd.kill;
+                }
+                else
+                {
+                    currentHealth -= processedDamage;
+
+                    // return normal health hit or crit
+                    if (damage.isCrit) return DamageEnd.crit;
+                    else return DamageEnd.health;
+                }
+            }
+            else
+            {
+                currentShields -= processedDamage;
+                return DamageEnd.armor;
+            }
+        }
+        else
+        {
+            currentShields -= processedDamage;
+            return DamageEnd.shields;
+        }
+    }
+
+    /*
     public HitpointType MainDamage(Damage damage)
     {
         // what needs to happen: reset hemorrhage ticks, deal damage to shields->armor->health
@@ -306,7 +377,7 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
             currentHealth -= damage.baseDamage;
             return HitpointType.health;
         }
-    }
+    } */
 
     public void OffsetPoise(int stagger)
     {
