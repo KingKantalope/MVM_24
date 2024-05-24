@@ -169,17 +169,9 @@ public class PlayerHUD : MonoBehaviour
         }
     }
 
-    public void SetHitpoints(float shieldsCurrent, float shieldsMax,
-        float armorCurrent, float armorMax, float healthCurrent, float healthMax, int armorLevel)
+    public void SetHealth(float healthCurrent, float healthMax)
     {
-        armorLevelText.text = armorLevel.ToString();
-
-        float shieldRatio = shieldsCurrent / shieldsMax;
-        float armorRatio = armorCurrent / armorMax;
         float healthRatio = healthCurrent / healthMax;
-
-        shieldBar.fillAmount = shieldRatio;
-        armorBar.fillAmount = armorRatio;
         healthBar.fillAmount = healthRatio;
 
         if (healthRatio < 0.35)
@@ -192,6 +184,17 @@ public class PlayerHUD : MonoBehaviour
             healthBar.color = healthColor;
             healthBarBackground.color = healthBackgroundColor;
         }
+    }
+
+    public void SetArmor(float armorCurrent, float armorMax, int armorLevel, int armorWeakening)
+    {
+        if (armorWeakening > 0) armorLevelText.color = Color.green;
+        else armorLevelText.color = Color.black;
+
+        armorLevelText.text = (armorLevel - armorWeakening).ToString();
+
+        float armorRatio = armorCurrent / armorMax;
+        armorBar.fillAmount = armorRatio;
 
         if (armorRatio < 0.35)
         {
@@ -203,6 +206,12 @@ public class PlayerHUD : MonoBehaviour
             armorBar.color = armorColor;
             armorBarBackground.color = armorBackgroundColor;
         }
+    }
+
+    public void SetShields(float shieldsCurrent, float shieldsMax)
+    {
+        float shieldRatio = shieldsCurrent / shieldsMax;
+        shieldBar.fillAmount = shieldRatio;
 
         if (shieldRatio < 0.35)
         {

@@ -46,4 +46,5 @@ public struct Damage
     public float critMulti;
     public int penetrationLevel;
     public bool isCrit;
+    public int critBonus;
 }

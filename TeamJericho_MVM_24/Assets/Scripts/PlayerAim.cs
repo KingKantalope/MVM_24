@@ -42,12 +42,14 @@ public class PlayerAim : MonoBehaviour
 
     public void OnMouseLook(InputAction.CallbackContext context)
     {
-        mouseLook = context.ReadValue<Vector2>();
+        if (!aimLocked) mouseLook = context.ReadValue<Vector2>();
+        else mouseLook = Vector2.zero;
     }
 
     public void OnGamepadLook(InputAction.CallbackContext context)
     {
-        gamepadLook = context.ReadValue<Vector2>();
+        if (!aimLocked) gamepadLook = context.ReadValue<Vector2>();
+        else gamepadLook = Vector2.zero;
     }
 
     public void OnPlayerClimb(bool isClimbing)
@@ -81,12 +83,9 @@ public class PlayerAim : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (!aimLocked)
-        {
-            GamepadLookAcceleration();
-            AimMagnetism();
-            Look();
-        }
+        GamepadLookAcceleration();
+        AimMagnetism();
+        Look();
     }
 
     private void SetTargetZoom(float target, float speed)

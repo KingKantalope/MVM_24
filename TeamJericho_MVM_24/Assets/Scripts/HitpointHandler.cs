@@ -1,10 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class PlayerHitpoints : MonoBehaviour, IDamageable
 {
     [SerializeField] private Actor thisActor;
+
+    public UnityEvent<float, float> OnChangeHealth;
+    public UnityEvent<float, float, int, int> OnChangeArmor;
+    public UnityEvent<float, float> OnChangeShields;
 
     #region Variables
     [Header("Shields Hitpoints")]
@@ -85,6 +90,13 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
     // Start is called before the first frame update
     void Start()
     {
+        currentHealth = startingHealth;
+        OnChangeHealth?.Invoke(currentHealth, maxHealth);
+        currentArmor = startingArmor;
+        OnChangeArmor?.Invoke(currentArmor, maxArmor, protectionLevel, armorWeakening);
+        currentShields = startingShields;
+        OnChangeShields?.Invoke(currentShields, maxShields);
+
         hasDied = false;
         isShocked = false;
     }
@@ -99,6 +111,7 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
         HandlePoise();
         HandleHealth();
         HandleShields();
+
     }
 
     private void OnDeath()
@@ -111,16 +124,16 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
 
     private void HandleRadiation()
     {
-        netRechargeRate = (100f - currentRadiation) / 100f;
+        netRechargeRate = rechargeRate * (100f - currentRadiation) / 100f;
         armorWeakening = (int)currentRadiation / weakenThreshold;
         netArmorResilience = (100f + currentRadiation) / 100f;
 
         // decay
         decayTime -= Time.deltaTime;
 
-        if (decayTime <= 0f)
+        if (decayTime <= 0f && currentRadiation > 0f)
         {
-            currentFrost -= meltRate * Time.deltaTime;
+            currentRadiation -= decayRate * Time.deltaTime;
         }
     }
 
@@ -131,7 +144,7 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
         // melt
         meltTime -= Time.deltaTime;
 
-        if (meltTime <= 0f)
+        if (meltTime <= 0f && currentFrost > 0f)
         {
             currentFrost -= meltRate * Time.deltaTime;
         }
@@ -150,6 +163,7 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
                     currentHealth -= bleedDamageMajor;
                     healTime = healDelay;
                     isHealing = true;
+                    OnChangeHealth?.Invoke(currentHealth, maxHealth);
 
                     if (numTicksCurrent < numTicksMajor) numTicksCurrent++;
                     else hemorrhageLevel = Hemorrhage.none;
@@ -163,6 +177,7 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
                     currentHealth -= bleedDamageMinor;
                     healTime = healDelay;
                     isHealing = true;
+                    OnChangeHealth?.Invoke(currentHealth, maxHealth);
 
                     if (numTicksCurrent < numTicksMinor) numTicksCurrent++;
                     else hemorrhageLevel = Hemorrhage.none;
@@ -177,6 +192,7 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
         {
             // damage shields
             currentShields -= shockDPS * Time.deltaTime;
+            currentShields += netRechargeRate * Time.deltaTime;
 
             rechargeTime = rechargeDelay;
             healTime = healDelay;
@@ -197,7 +213,9 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
             if (healTime <= 0f && amountHealed < maxSelfHeal && currentHealth < (maxHealth - currentRadiation))
             {
                 currentHealth += healRate * Time.deltaTime;
-                maxSelfHeal += healRate * Time.deltaTime;
+                amountHealed += healRate * Time.deltaTime;
+
+                OnChangeHealth?.Invoke(currentHealth, maxHealth);
             }
         }
         else
@@ -213,6 +231,8 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
         if (rechargeTime <= 0f && currentShields < maxShields)
         {
             currentShields += netRechargeRate * Time.deltaTime;
+
+            OnChangeShields?.Invoke(currentShields, maxShields);
         }
     }
 
@@ -230,49 +250,57 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
 
         // process damage
         float processedDamage = damage.baseDamage * damage.shieldMulti;
-        float outcomeDamage = processedDamage - currentShields;
-        float damageRatio = 0f;
+        float outcomeDamage = Mathf.Clamp(processedDamage - currentShields, 0f, processedDamage);
 
         // shield damage
         if (outcomeDamage > 0f)
         {
-            // break shields, get damage prior to armor adjustments
-            damageRatio += outcomeDamage / (processedDamage + outcomeDamage);
-            processedDamage = damage.baseDamage * damageRatio;
-            currentShields = 0f;
+            // get proper damage
+            // turn left over damage into armor damage
+            processedDamage = (outcomeDamage * damage.armorMulti) / damage.shieldMulti;
 
-            // get level of penetration and adjust base damage accordingly
-            int armorDifference = damage.penetrationLevel - protectionLevel + armorWeakening;
-            armorDifference += damage.isCrit? damage.critBonus : 0;
+            // calculate any overpenetration or damage reduction
+            float armorDifference = (float)(damage.penetrationLevel + armorWeakening - protectionLevel) * 0.25f;
+            float penetrationDamage = processedDamage * Mathf.Clamp(armorDifference, 0f, 0.75f);
+            processedDamage *= Mathf.Clamp(armorDifference + 1f, 0.25f, 1f);
 
-            // get damage to armor and additional health damage
-            float penetrationDamage = Mathf.Clamp(processedDamage * armorDifference * 0.25f, 0f, processedDamage * 0.75f);
-            processedDamage = Mathf.Clamp(processedDamage * (1 - armorDifference) * 0.25f,processedDamage * 0.25f, processedDamage);
+            // get normal over-damage
+            outcomeDamage = Mathf.Clamp(processedDamage - currentArmor, 0f, processedDamage);
 
-            // adjust to armor
-            processedDamage *= damage.armorMulti;
-            outcomeDamage = currentArmor - processedDamage;
+            OnChangeShields?.Invoke(currentShields, maxShields);
 
             // armor damage
             if (outcomeDamage > 0f || penetrationDamage > 0f)
             {
-                // break armor, get damage
-                damageRatio += outcomeDamage / (processedDamage + outcomeDamage);
-                processedDamage = damage.baseDamage * damageRatio + penetrationDamage;
-                currentArmor = 0f;
+                // rest shield timer
+                healTime = healDelay;
 
-                if (damage.isCrit) processedDamage *= damage.critMulti;
+                // damage armor
+                if (processedDamage < currentArmor) currentArmor -= processedDamage;
+                else currentArmor = 0f;
+                OnChangeArmor?.Invoke(currentArmor, maxArmor, protectionLevel, armorWeakening);
+                Debug.Log("armor damage: " + processedDamage);
+
+                // get proper damage
+                // turn left over damage into health damage
+                processedDamage = (outcomeDamage + penetrationDamage) / damage.armorMulti;
 
                 // health damage
-                if (processedDamage > currentHealth)
+                if (processedDamage > currentHealth || (critsInstakill && damage.isCrit))
                 {
                     currentHealth = 0f;
-                    OnDeath();
+                    Debug.Log("health damage: " + processedDamage);
+
+                    OnChangeHealth?.Invoke(currentHealth, maxHealth);
+                    
                     return DamageEnd.kill;
                 }
                 else
                 {
                     currentHealth -= processedDamage;
+                    Debug.Log("health damage: " + processedDamage);
+
+                    OnChangeHealth?.Invoke(currentHealth, maxHealth);
 
                     // return normal health hit or crit
                     if (damage.isCrit) return DamageEnd.crit;
@@ -281,13 +309,17 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
             }
             else
             {
-                currentShields -= processedDamage;
+                currentArmor -= processedDamage;
+                Debug.Log("armor damage: " + processedDamage);
+                OnChangeArmor?.Invoke(currentArmor, maxArmor, protectionLevel, armorWeakening);
                 return DamageEnd.armor;
             }
         }
         else
         {
             currentShields -= processedDamage;
+            Debug.Log("shield damage: " + processedDamage);
+            OnChangeShields?.Invoke(currentShields, maxShields);
             return DamageEnd.shields;
         }
     }
