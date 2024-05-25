@@ -33,7 +33,7 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
     [SerializeField] private float maxSelfHeal;
     [SerializeField] private float healDelay;
     [SerializeField] private float healRate;
-    [SerializeField] private bool critsInstakill;
+    [SerializeField] private bool canBeInstakilled;
     private float currentHealth;
     private float amountHealed;
     private float healTime;
@@ -243,10 +243,14 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
     /* All colliders that can receive damage relays all their data to this script.
      * Logic is handled here, all other relevant scripts reference this in order to grab modifiers.
      */
-    public DamageEnd MainDamage(Damage damage)
+
+    //
+    public DamageEnd MainDamage(Damage damage, Vector3 damageSource)
     {
         // reset shield timer
         rechargeTime = rechargeDelay;
+
+        // tell HUD rotation for damage indicator
 
         // process damage
         float processedDamage = damage.baseDamage * damage.shieldMulti;
@@ -285,8 +289,11 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
                 // turn left over damage into health damage
                 processedDamage = (outcomeDamage + penetrationDamage) / damage.armorMulti;
 
+                // add to autoheal
+                amountHealed = Mathf.Clamp(amountHealed - processedDamage, 0f, maxSelfHeal);
+
                 // health damage
-                if (processedDamage > currentHealth || (critsInstakill && damage.isCrit))
+                if (processedDamage > currentHealth || (canBeInstakilled && damage.isCrit && damage.canInstakill))
                 {
                     currentHealth = 0f;
                     Debug.Log("health damage: " + processedDamage);

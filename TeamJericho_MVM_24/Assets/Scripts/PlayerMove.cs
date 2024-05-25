@@ -25,6 +25,7 @@ public class PlayerMove : MonoBehaviour
     private List<Collision> collisions;
     private Vector3 NetNormal = Vector3.zero;
 
+    public Transform turnParent;
     public float playerSpeed = 5.5f;
     public float playerAccel = 40.0f;
     public float crouchSpeed = 3.25f;
@@ -54,7 +55,10 @@ public class PlayerMove : MonoBehaviour
 
     public List<gravityPair> GravityList;
 
-    public void OnMove(InputAction.CallbackContext context) { moveInput = context.ReadValue<Vector2>(); }
+    public void OnMove(InputAction.CallbackContext context)
+    {
+        moveInput = context.ReadValue<Vector2>();
+    }
     public void OnJump(InputAction.CallbackContext context)
     {
         wantToJump = context.ReadValueAsButton();
@@ -110,7 +114,7 @@ public class PlayerMove : MonoBehaviour
     private void FindClimbWall()
     {
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.forward, out hit, playerCollider.radius + 0.5f, whatIsClimbable))
+        if (Physics.Raycast(transform.position, turnParent.forward, out hit, playerCollider.radius + 0.5f, whatIsClimbable))
         {
             // save normal of surface
             wallNormal = hit.normal;
@@ -187,8 +191,8 @@ public class PlayerMove : MonoBehaviour
         {
             // get input relative to slope normal and player rotation
             TargetVelocity = Vector3.zero;
-            TargetVelocity += Vector3.ProjectOnPlane(transform.right, slopeNormal).normalized * moveInput.x;
-            TargetVelocity += Vector3.ProjectOnPlane(transform.forward, slopeNormal).normalized * moveInput.y;
+            TargetVelocity += Vector3.ProjectOnPlane(turnParent.right, slopeNormal).normalized * moveInput.x;
+            TargetVelocity += Vector3.ProjectOnPlane(turnParent.forward, slopeNormal).normalized * moveInput.y;
 
             // project lateralVelocity onto normal
             LateralVelocity = rb.velocity;
@@ -212,7 +216,7 @@ public class PlayerMove : MonoBehaviour
         {
             // get input relative to player transform rotation
             TargetVelocity = new Vector3(moveInput.x, 0f, moveInput.y);
-            TargetVelocity = transform.TransformDirection(TargetVelocity);
+            TargetVelocity = turnParent.TransformDirection(TargetVelocity);
 
             // get lateral velocity
             LateralVelocity = rb.velocity;

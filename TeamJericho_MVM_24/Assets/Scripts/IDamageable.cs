@@ -5,7 +5,7 @@ using UnityEngine;
 
 public interface IDamageable
 {
-    DamageEnd MainDamage(Damage damage);
+    DamageEnd MainDamage(Damage damage, Vector3 damageSource);
     void OffsetPoise(int stagger);
     void OffsetRadiation(int radiation);
     void OffsetFrost(int frost);
@@ -46,5 +46,6 @@ public struct Damage
     public float critMulti;
     public int penetrationLevel;
     public bool isCrit;
+    public bool canInstakill;
     public int critBonus;
 }
