@@ -63,6 +63,10 @@ public class PlayerHUD : MonoBehaviour
     [SerializeField] private Color shieldColor;
     [SerializeField] private Color shieldBackgroundColor;
 
+    [SerializeField] private GameObject damageIndicator;
+    [SerializeField] private float indicatorDecayRate = 0.2f;
+    private List<DamageIndicator> damageIndicators;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -74,53 +78,12 @@ public class PlayerHUD : MonoBehaviour
     void Update()
     {
         // set hud centered on actual aim
+        UpdateDamageIndicators();
     }
 
     public (RectTransform, RectTransform) OnAttachHandheldHUDFIXED()
     {
         return (ReticleParent, ammoCounterParent);
-    }
-
-    public void OnAttachHandheldHUD(IHandheldObject handheldObject, GameObject handheldDisplay, GameObject reticleDisplay, Sprite displayImage)
-    {
-        HandheldDisplay displayToReturn = null;
-        HandheldReticle reticleToReturn = null;
-
-        GameObject reticleObject = Instantiate(reticleDisplay, ReticleParent, false);
-        GameObject displayObject = Instantiate(handheldDisplay, ammoCounterParent, false);
-
-        switch (nextSlot)
-        {
-            case HandheldSlot.Pickup:
-                pickupDisplay = displayObject;
-                pickupImage.sprite = displayImage;
-                displayToReturn = pickupDisplay.GetComponent<HandheldDisplay>();
-                reticleToReturn = reticleObject.GetComponent<HandheldReticle>();
-                break;
-            case HandheldSlot.WeaponOne:
-                pickupDisplay = displayObject;
-                pickupImage.sprite = displayImage;
-                displayToReturn = pickupDisplay.GetComponent<HandheldDisplay>();
-                reticleToReturn = reticleObject.GetComponent<HandheldReticle>();
-                break;
-            case HandheldSlot.WeaponTwo:
-                pickupDisplay = displayObject;
-                pickupImage.sprite = displayImage;
-                displayToReturn = pickupDisplay.GetComponent<HandheldDisplay>();
-                reticleToReturn = reticleObject.GetComponent<HandheldReticle>();
-                break;
-            case HandheldSlot.Sidearm:
-                pickupDisplay = displayObject;
-                pickupImage.sprite = displayImage;
-                displayToReturn = pickupDisplay.GetComponent<HandheldDisplay>();
-                reticleToReturn = reticleObject.GetComponent<HandheldReticle>();
-                break;
-        }
-
-        handheldObject.OnAttachedDisplay(displayToReturn);
-        displayToReturn.OnAttachedDisplay(defaultColor);
-        handheldObject.OnAttachedReticle(reticleToReturn);
-        reticleToReturn.OnCreateReticle(reticleColor, enemyColor, friendlyColor);
     }
 
     public virtual void SetCritIndicator(bool isCrit)
@@ -139,6 +102,36 @@ public class PlayerHUD : MonoBehaviour
     public virtual void SetHUDRectTransformValues(Vector2 posOffset, float rotOffset)
     {
 
+    }
+
+    public void SpawnDamageIndicator(Vector3 source, float intensity)
+    {
+        // check if an indicator already exists for this source
+
+        // instantiate indicator and pass it its source and intensity
+        GameObject indicatorObject = Instantiate(damageIndicator, ReticleParent);
+        DamageIndicator indicator = new DamageIndicator();
+        indicator.indicator = indicatorObject.GetComponent<CanvasGroup>();
+        indicator.source = source;
+        indicator.indicator.alpha = intensity;
+
+        // add to list of indicators
+        damageIndicators.Add(indicator);
+    }
+
+    public void UpdateDamageIndicators()
+    {
+        foreach (var indicator in damageIndicators)
+        {
+            if (indicator.indicator.alpha <= 0f) Destroy(indicator.indicator.gameObject);
+            else
+            {
+                // fade indicator
+                indicator.indicator.alpha -= Time.deltaTime * indicatorDecayRate;
+
+                // rotate indicator
+            }
+        }
     }
 
     public void SetActiveHandheld(HandheldSlot handheldSlot)
@@ -224,4 +217,10 @@ public class PlayerHUD : MonoBehaviour
             shieldBarBackground.color = shieldBackgroundColor;
         }
     }
+}
+
+public struct DamageIndicator
+{
+    public CanvasGroup indicator;
+    public Vector3 source;
 }

@@ -21,7 +21,7 @@ public class DamageZone : MonoBehaviour
 
         foreach (var target in targets)
         {
-            if (target.MainDamage(dmgToDeal, transform.position) == DamageEnd.kill)
+            if (target.MainDamage(dmgToDeal, transform) == DamageEnd.kill)
             {
                 targets.Remove(target);
             }

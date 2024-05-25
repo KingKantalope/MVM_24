@@ -5,7 +5,7 @@ using UnityEngine;
 
 public interface IDamageable
 {
-    DamageEnd MainDamage(Damage damage, Vector3 damageSource);
+    DamageEnd MainDamage(Damage damage, Transform damageSource);
     void OffsetPoise(int stagger);
     void OffsetRadiation(int radiation);
     void OffsetFrost(int frost);

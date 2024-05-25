@@ -245,7 +245,7 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
      */
 
     //
-    public DamageEnd MainDamage(Damage damage, Vector3 damageSource)
+    public DamageEnd MainDamage(Damage damage, Transform damageSource)
     {
         // reset shield timer
         rechargeTime = rechargeDelay;
