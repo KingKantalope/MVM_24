@@ -11,7 +11,7 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
     public UnityEvent<float, float, int, int> OnChangeArmor;
     public UnityEvent<float, float> OnChangeShields;
     public UnityEvent<Vector3, float> OnReceiveDamage;
-    public UnityEvent<string> OnDeath;
+    public UnityEvent OnDeath;
 
     #region Variables
     [Header("Shields Hitpoints")]
@@ -222,7 +222,7 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
             // each Actor has its own needs for when handling death, after all
             // but invoking will allow the HUD to do its own death sequence
             // and force other scripts to shut off and such, like movement and aim, at least for singleplayer
-            OnDeath?.Invoke(thisActor.GetID());
+            OnDeath?.Invoke();
         }
     }
 
