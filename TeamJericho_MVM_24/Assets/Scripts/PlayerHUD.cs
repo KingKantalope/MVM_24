@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Net.NetworkInformation;
 
 public class PlayerHUD : MonoBehaviour
 {
@@ -63,19 +64,22 @@ public class PlayerHUD : MonoBehaviour
     [SerializeField] private Color shieldColor;
     [SerializeField] private Color shieldBackgroundColor;
 
+    [SerializeField] private Transform aimParent;
     [SerializeField] private GameObject damageIndicator;
     [SerializeField] private float indicatorDecayRate = 0.2f;
+    [SerializeField] private float minIndicatorAlpha = 0.2f;
     private List<DamageIndicator> damageIndicators;
 
     // Start is called before the first frame update
     void Start()
     {
+        damageIndicators = new List<DamageIndicator>();
+
         // set default rotation
         // set default HUD position
     }
 
-    // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
         // set hud centered on actual aim
         UpdateDamageIndicators();
@@ -101,19 +105,31 @@ public class PlayerHUD : MonoBehaviour
 
     public virtual void SetHUDRectTransformValues(Vector2 posOffset, float rotOffset)
     {
-
+        
     }
 
     public void SpawnDamageIndicator(Vector3 source, float intensity)
     {
         // check if an indicator already exists for this source
+        foreach (var indication in damageIndicators)
+        {
+            if (indication.source == source)
+            {
+                indication.indicator.alpha += intensity;
+                indication.addedThisFrame = true;
+                return;
+            }
+        }
+
+        Debug.Log("Damage Indicator Created");
 
         // instantiate indicator and pass it its source and intensity
         GameObject indicatorObject = Instantiate(damageIndicator, ReticleParent);
         DamageIndicator indicator = new DamageIndicator();
         indicator.indicator = indicatorObject.GetComponent<CanvasGroup>();
         indicator.source = source;
-        indicator.indicator.alpha = intensity;
+        indicator.addedThisFrame = true;
+        indicator.indicator.alpha = intensity + minIndicatorAlpha;
 
         // add to list of indicators
         damageIndicators.Add(indicator);
@@ -121,15 +137,35 @@ public class PlayerHUD : MonoBehaviour
 
     public void UpdateDamageIndicators()
     {
-        foreach (var indicator in damageIndicators)
+        Vector3 toSource = Vector3.zero;
+        float dirRight = 0f;
+        float dirUp = 0f;
+        float indicatorRot = 0f;
+
+        foreach (var indication in damageIndicators)
         {
-            if (indicator.indicator.alpha <= 0f) Destroy(indicator.indicator.gameObject);
+            if (indication.indicator.alpha <= 0f)
+            {
+                // remove from list
+                damageIndicators.Remove(indication);
+
+                // destroy the indicator
+                Destroy(indication.indicator.gameObject);
+            }
             else
             {
                 // fade indicator
-                indicator.indicator.alpha -= Time.deltaTime * indicatorDecayRate;
+                if (!indication.addedThisFrame) indication.indicator.alpha -= Time.deltaTime * indicatorDecayRate;
+                else indication.addedThisFrame = false;
+
+                // get angle from camera to source
+                toSource = indication.source - aimParent.position;
+                dirRight = Vector3.Dot(aimParent.right, toSource.normalized);
+                dirUp = Vector3.Dot(aimParent.up, toSource.normalized);
+                indicatorRot = -Mathf.Atan2(dirUp,dirRight) * Mathf.Rad2Deg;
 
                 // rotate indicator
+                indication.indicator.GetComponent<RectTransform>().localRotation = Quaternion.Euler(new Vector3(0f,0f,indicatorRot - 90f));
             }
         }
     }
@@ -219,8 +255,9 @@ public class PlayerHUD : MonoBehaviour
     }
 }
 
-public struct DamageIndicator
+public class DamageIndicator
 {
     public CanvasGroup indicator;
     public Vector3 source;
+    public bool addedThisFrame;
 }

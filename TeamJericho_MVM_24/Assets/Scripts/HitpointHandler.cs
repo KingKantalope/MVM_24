@@ -10,6 +10,8 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
     public UnityEvent<float, float> OnChangeHealth;
     public UnityEvent<float, float, int, int> OnChangeArmor;
     public UnityEvent<float, float> OnChangeShields;
+    public UnityEvent<Vector3, float> OnReceiveDamage;
+    public UnityEvent<string> OnDeath;
 
     #region Variables
     [Header("Shields Hitpoints")]
@@ -114,12 +116,6 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
 
     }
 
-    private void OnDeath()
-    {
-        // figure this out later
-        //Debug.Log("OMG I FUCKING DIED UGH");
-    }
-
     #region status effects
 
     private void HandleRadiation()
@@ -220,7 +216,13 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
         }
         else
         {
-            OnDeath();
+            // call death event
+            // this should report to the game that the respawn or reset sequence should be enacted
+            // maybe this could just be a call to the Actor class that then deals with it from there?
+            // each Actor has its own needs for when handling death, after all
+            // but invoking will allow the HUD to do its own death sequence
+            // and force other scripts to shut off and such, like movement and aim, at least for singleplayer
+            OnDeath?.Invoke(thisActor.GetID());
         }
     }
 
@@ -251,6 +253,7 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
         rechargeTime = rechargeDelay;
 
         // tell HUD rotation for damage indicator
+        OnReceiveDamage?.Invoke(damageSource.position, damage.baseDamage * 1.5f / maxHealth);
 
         // process damage
         float processedDamage = damage.baseDamage * damage.shieldMulti;
