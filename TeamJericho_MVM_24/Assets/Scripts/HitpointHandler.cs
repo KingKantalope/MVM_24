@@ -286,7 +286,6 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
                 if (processedDamage < currentArmor) currentArmor -= processedDamage;
                 else currentArmor = 0f;
                 OnChangeArmor?.Invoke(currentArmor, maxArmor, protectionLevel, armorWeakening);
-                Debug.Log("armor damage: " + processedDamage);
 
                 // get proper damage
                 // turn left over damage into health damage
@@ -299,7 +298,6 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
                 if (processedDamage > currentHealth || (canBeInstakilled && damage.isCrit && damage.canInstakill))
                 {
                     currentHealth = 0f;
-                    Debug.Log("health damage: " + processedDamage);
 
                     OnChangeHealth?.Invoke(currentHealth, maxHealth);
                     
@@ -308,7 +306,6 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
                 else
                 {
                     currentHealth -= processedDamage;
-                    Debug.Log("health damage: " + processedDamage);
 
                     OnChangeHealth?.Invoke(currentHealth, maxHealth);
 
@@ -320,7 +317,6 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
             else
             {
                 currentArmor -= processedDamage;
-                Debug.Log("armor damage: " + processedDamage);
                 OnChangeArmor?.Invoke(currentArmor, maxArmor, protectionLevel, armorWeakening);
                 return DamageEnd.armor;
             }
@@ -328,7 +324,6 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
         else
         {
             currentShields -= processedDamage;
-            Debug.Log("shield damage: " + processedDamage);
             OnChangeShields?.Invoke(currentShields, maxShields);
             return DamageEnd.shields;
         }

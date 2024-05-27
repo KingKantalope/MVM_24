@@ -110,7 +110,7 @@ public class PlayerAim : MonoBehaviour
         cam.fieldOfView = Mathf.Clamp(cam.fieldOfView + changeInFOV,defaultFieldOfView / targetZoom,defaultFieldOfView);
 
         // last thing to do!
-        camHolder.localRotation = Quaternion.Euler(-90f + cam.fieldOfView * aimOffset, 0f, 180f);
+        camHolder.localRotation = Quaternion.Euler(0f + cam.fieldOfView * aimOffset, 0f, 0f);
     }
 
     private void SetCameraOffset()
@@ -171,7 +171,7 @@ public class PlayerAim : MonoBehaviour
 
         // look
         lookRotation += (mouseRotation + gamepadRotation + netRecoil.x);
-        lookRotation = Mathf.Clamp(lookRotation, -90, 90);
+        lookRotation = Mathf.Clamp(lookRotation, -90f, 90f);
         zRotation.eulerAngles = new Vector3(lookRotation, zRotation.eulerAngles.y, zRotation.eulerAngles.z);
     }
 

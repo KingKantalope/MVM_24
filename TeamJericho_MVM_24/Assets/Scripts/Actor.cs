@@ -8,10 +8,17 @@ public class Actor : MonoBehaviour
 
     public string GetID() { return actorID; }
 
+    public virtual void OnSpawnActor(string assignedID)
+    {
+        actorID = assignedID;
+    }
+
     public virtual void OnDeath()
     {
         // just destroy this actor
         Destroy(gameObject);
+
+        // tell gamemode/GameManager that target has died
 
         // DO NOT CALL THIS BASE UNLESS YOU WANT TO DESPAWN THE ACTOR
 

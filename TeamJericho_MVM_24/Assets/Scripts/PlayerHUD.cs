@@ -161,11 +161,11 @@ public class PlayerHUD : MonoBehaviour
                 // get angle from camera to source
                 toSource = indication.source - aimParent.position;
                 dirRight = Vector3.Dot(aimParent.right, toSource.normalized);
-                dirUp = Vector3.Dot(aimParent.up, toSource.normalized);
+                dirUp = -Vector3.Dot(aimParent.up, toSource.normalized);
                 indicatorRot = -Mathf.Atan2(dirUp,dirRight) * Mathf.Rad2Deg;
 
                 // rotate indicator
-                indication.indicator.GetComponent<RectTransform>().localRotation = Quaternion.Euler(new Vector3(0f,0f,indicatorRot - 90f));
+                indication.indicator.GetComponent<RectTransform>().localRotation = Quaternion.Euler(new Vector3(0f,0f,indicatorRot + 90f));
             }
         }
     }
