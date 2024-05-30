@@ -110,7 +110,7 @@ public class PlayerAim : MonoBehaviour
         cam.fieldOfView = Mathf.Clamp(cam.fieldOfView + changeInFOV,defaultFieldOfView / targetZoom,defaultFieldOfView);
 
         // last thing to do!
-        camHolder.localRotation = Quaternion.Euler(0f + cam.fieldOfView * aimOffset, 0f, 0f);
+        camHolder.localRotation = Quaternion.Euler(-90f - cam.fieldOfView * aimOffset, 0f, 180f);
     }
 
     private void SetCameraOffset()
