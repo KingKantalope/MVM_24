@@ -15,8 +15,9 @@ public class HandheldGun : MonoBehaviour, IHandheldObject
 
     #region variables
 
-    [Header("Gun Animator")]
+    [Header("Gun Visuals")]
     [SerializeField] private Animator GunAnimator;
+    [SerializeField] private MeshRenderer MeshRender;
 
     [Header("HUD Elements")]
     [SerializeField] private GameObject ammoDisplayObject;
@@ -102,7 +103,7 @@ public class HandheldGun : MonoBehaviour, IHandheldObject
     private bool wantToAltAttack;
     private bool wantToReload;
     private bool wantToMelee;
-    private GunAction currentAction = GunAction.Equipping;
+    private GunAction currentAction = GunAction.Stowed;
 
     private int testMagCurrent = 8;
     private int testMagSize = 8;
@@ -115,7 +116,7 @@ public class HandheldGun : MonoBehaviour, IHandheldObject
     {
         magCurrent = startingMagSize;
         reservesCurrent = startingReserves;
-        currentAction = GunAction.Idle;
+        currentAction = GunAction.Stowed;
         wantToAttack = false;
         wantToAltAttack = false;
         wantToReload = false;
@@ -493,20 +494,32 @@ public class HandheldGun : MonoBehaviour, IHandheldObject
 
     public void OnEquip()
     {
-        m_CarrierSystem.GetAnimator().SetTrigger("Equip");
-        GunAnimator.SetTrigger("Equip");
+        if (currentAction != GunAction.Equipping)
+        {
+            m_CarrierSystem.GetAnimator().SetTrigger("Equip");
+            GunAnimator.SetTrigger("Equip");
 
-        currentAction = GunAction.Equipping;
-        switchTime = EquipDuration;
+            // turn model visible
+            MeshRender.enabled = true;
+
+            currentAction = GunAction.Equipping;
+            switchTime = EquipDuration;
+        }
     }
 
     public void OnUnequip()
     {
-        m_CarrierSystem.GetAnimator().SetTrigger("Unequip");
-        GunAnimator.SetTrigger("Unequip");
+        if (currentAction != GunAction.Stowing)
+        {
+            m_CarrierSystem.GetAnimator().SetTrigger("Unequip");
+            GunAnimator.SetTrigger("Unequip");
 
-        currentAction = GunAction.Stowing;
-        switchTime = StowDuration;
+            // turn reticle invisible
+            reticleDisplay.SetVisibility(false);
+
+            currentAction = GunAction.Stowing;
+            switchTime = StowDuration;
+        }
     }
 
     private void EquipUpdate()
@@ -520,6 +533,8 @@ public class HandheldGun : MonoBehaviour, IHandheldObject
         }
         else if (currentAction == GunAction.Equipping)
         {
+            // turn reticle visible
+            reticleDisplay.SetVisibility(true);
             currentAction = GunAction.Idle;
         }
     }
@@ -535,9 +550,11 @@ public class HandheldGun : MonoBehaviour, IHandheldObject
         }
         else if (currentAction == GunAction.Stowing)
         {
-            Destroy(reticleDisplay.gameObject);
+            // turn model invisible
+            MeshRender.enabled = false;
 
-            m_CarrierSystem.OnStow();
+            m_CarrierSystem.FinishHandheldSwap();
+            currentAction = GunAction.Stowed;
         }
     }
 
@@ -613,5 +630,6 @@ public enum GunAction
     Reloading,
     Meleeing,
     Equipping,
-    Stowing
+    Stowing,
+    Stowed
 }

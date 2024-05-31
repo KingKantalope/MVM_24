@@ -5,49 +5,71 @@ using UnityEngine.InputSystem;
 
 public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
 {
-    // private HUD m_HUD;
-
     [Header("Sockets")]
     [SerializeField] private Transform RigSocket;
-    [SerializeField] private Transform SlingSocketOne;
-    [SerializeField] private Transform SlingSocketTwo;
-    [SerializeField] private Transform SidearmSocket;
-    [SerializeField] private Transform EquipmentSocket;
 
     [Header("Other Important Scripts")]
     [SerializeField] private Animator RigAnimator;
-    [SerializeField] private Recoil CameraController;
     [SerializeField] private PlayerMove Movement;
     [SerializeField] private CapsuleCollider MeleeCollider;
     [SerializeField] private PlayerHUD playerHUD;
     [SerializeField] private PlayerAim playerAim;
 
-    [Header("Arsenal")]
-    [SerializeField] private IHandheldObject WeaponOne;
-    [SerializeField] private IHandheldObject WeaponTwo;
-    [SerializeField] private IHandheldObject Sidearm;
-    // create throwable script for grenades and 
-    [SerializeField] private int FragMaxCount;
-    [SerializeField] private int MoverMaxCount;
-    [SerializeField] private int PhosphorusMaxCount;
-    [SerializeField] private int BismuthMaxCount;
-    [SerializeField] public List<HandheldScriptableObject> EquipableHandhelds;
+    [Header("Weapons")]
+    [SerializeField] private HandheldSlot startingSlot = HandheldSlot.None;
+    [SerializeField] private HandheldScriptableObject WeaponOneMeta;
+    [SerializeField] private HandheldScriptableObject WeaponTwoMeta;
+    [SerializeField] private HandheldScriptableObject SidearmMeta;
 
     private HandheldScriptableObject m_CurrentHandheldScriptableObject;
     private GameObject m_CurrentHandheldGameObject;
     private IHandheldObject m_CurrentHandheldInterface;
-    private int m_CurrentHandheldIndex;
-    private int m_NextHandheldIndex;
+
+    private IHandheldObject WeaponOne;
+    private IHandheldObject WeaponTwo;
+    private IHandheldObject Sidearm;
+    private GameObject WeaponOneObject;
+    private GameObject WeaponTwoObject;
+    private GameObject SidearmObject;
+    private HandheldSlot currentSlot = HandheldSlot.None;
+    private HandheldSlot nextSlot = HandheldSlot.None;
+
+    // swap input variables
+    [SerializeField] private float swapThreshold = 0.6f;
+    private bool wantToSwap = false;
+    private float swapTime = 0.0f;
+
+    [Header("Grenades and Equipment")]
+    // create scripts for grenades
+    [SerializeField] private EquipmentInfo currentEquipment;
+
+    [Header("Healing Syringes")]
+    [SerializeField] private int SyringeMaxCount;
+    [SerializeField] private int SyringeCount;
+
 
     private void Awake()
     {
-        SwitchHandheld(EquipableHandhelds[0]);
+        
     }
 
     private void Update()
     {
         RigAnimator.SetFloat("MoveSpeed",Movement.GetMovementRatio());
-        // Debug.Log(Movement.GetMovementRatio());
+
+        // swap fucntionality
+        if (wantToSwap)
+        {
+            if (swapTime >= swapThreshold)
+            {
+                StartHandheldSwap(true);
+                wantToSwap = false;
+            }
+            else
+            {
+                swapTime += Time.deltaTime;
+            }
+        }
     }
 
     public Animator GetAnimator()
@@ -55,37 +77,130 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
         return RigAnimator;
     }
 
-    // needs to change, should use persistent Handhelds to maintain data and timers
-    public void SwitchHandheld(HandheldScriptableObject handheld)
+    public void InitializeLoadout()
     {
-        if (m_CurrentHandheldScriptableObject == handheld)
-            return;
-
-        Destroy(m_CurrentHandheldGameObject);
-
-        m_CurrentHandheldScriptableObject = handheld;
-        m_CurrentHandheldGameObject = Instantiate(m_CurrentHandheldScriptableObject.HandheldPrefab, RigSocket, true);
-        m_CurrentHandheldGameObject.transform.localPosition = Vector3.zero;
-        m_CurrentHandheldGameObject.transform.localRotation = Quaternion.identity;
-
-        m_CurrentHandheldInterface = m_CurrentHandheldGameObject.GetComponentInChildren<IHandheldObject>();
-        if (m_CurrentHandheldInterface != null)
+        // instantiate all weapons
+        // set up initial weapon
+        if (WeaponOneMeta != null)
         {
-            playerHUD.SetActiveHandheld(HandheldSlot.Sidearm);
-            m_CurrentHandheldInterface.OnAttachedCarrier(this);
-            m_CurrentHandheldInterface.OnAttachedAim(playerAim);
-            m_CurrentHandheldInterface.OnAttachedHUD(playerHUD);
-            RigAnimator.runtimeAnimatorController = handheld.ArmController;
-            m_CurrentHandheldInterface.OnEquip();
-        }
-        else
-        {
-            DestroyImmediate(m_CurrentHandheldGameObject);
+            WeaponOneObject = Instantiate(WeaponOneMeta.HandheldPrefab, RigSocket, true);
+            WeaponOneObject.transform.localPosition = Vector3.zero;
+            WeaponOneObject.transform.localRotation = Quaternion.identity;
 
-            m_CurrentHandheldScriptableObject = null;
-            m_CurrentHandheldInterface = null;
-            m_CurrentHandheldGameObject = null;
+            WeaponOne = WeaponOneObject.GetComponent<IHandheldObject>();
+
+            // give Sidearm references
+            WeaponOne.OnAttachedCarrier(this);
+            WeaponOne.OnAttachedAim(playerAim);
+            WeaponOne.OnAttachedHUD(playerHUD);
+
+            // assign current weapon
+            currentSlot = HandheldSlot.WeaponOne;
+            m_CurrentHandheldScriptableObject = WeaponOneMeta;
+            m_CurrentHandheldGameObject = WeaponOneObject;
+            m_CurrentHandheldInterface = WeaponOne;
         }
+        if (WeaponOneMeta != null)
+        {
+            WeaponTwoObject = Instantiate(WeaponTwoMeta.HandheldPrefab, RigSocket, true);
+            WeaponTwoObject.transform.localPosition = Vector3.zero;
+            WeaponTwoObject.transform.localRotation = Quaternion.identity;
+
+            WeaponTwo = WeaponTwoObject.GetComponent<IHandheldObject>();
+
+            // give Sidearm references
+            WeaponTwo.OnAttachedCarrier(this);
+            WeaponTwo.OnAttachedAim(playerAim);
+            WeaponTwo.OnAttachedHUD(playerHUD);
+
+            // assign current weapon
+            if (currentSlot == HandheldSlot.None)
+            {
+                currentSlot = HandheldSlot.WeaponTwo;
+                m_CurrentHandheldScriptableObject = WeaponTwoMeta;
+                m_CurrentHandheldGameObject = WeaponTwoObject;
+                m_CurrentHandheldInterface = WeaponTwo;
+            }
+        }
+        if (WeaponOneMeta != null)
+        {
+            SidearmObject = Instantiate(SidearmMeta.HandheldPrefab, RigSocket, true);
+            SidearmObject.transform.localPosition = Vector3.zero;
+            SidearmObject.transform.localRotation = Quaternion.identity;
+
+            Sidearm = SidearmObject.GetComponent<IHandheldObject>();
+
+            // give Sidearm references
+            Sidearm.OnAttachedCarrier(this);
+            Sidearm.OnAttachedAim(playerAim);
+            Sidearm.OnAttachedHUD(playerHUD);
+
+            // assign current weapon
+            if (currentSlot == HandheldSlot.None)
+            {
+                currentSlot = HandheldSlot.Sidearm;
+                m_CurrentHandheldScriptableObject = SidearmMeta;
+                m_CurrentHandheldGameObject = SidearmObject;
+                m_CurrentHandheldInterface = Sidearm;
+            }
+        }
+    }
+
+    public void StartHandheldSwap(bool holdSwap)
+    {
+        // tell weapon to perform unequip
+        m_CurrentHandheldInterface.OnUnequip();
+
+        // get which slot to swap to
+        switch (currentSlot)
+        {
+            case HandheldSlot.WeaponOne:
+                if (holdSwap && SidearmMeta != null) nextSlot = HandheldSlot.Sidearm;
+                else if (WeaponTwoMeta != null) nextSlot = HandheldSlot.WeaponTwo;
+                break;
+            case HandheldSlot.WeaponTwo:
+                if (holdSwap && SidearmMeta != null) nextSlot = HandheldSlot.Sidearm;
+                else if (WeaponOneMeta != null) nextSlot = HandheldSlot.WeaponOne;
+                break;
+            case HandheldSlot.Sidearm:
+                if (WeaponOneMeta != null) nextSlot = HandheldSlot.WeaponOne;
+                else if (WeaponOneMeta != null) nextSlot = HandheldSlot.WeaponTwo;
+                break;
+            case HandheldSlot.None:
+                // ???????????
+                break;
+        }
+    }
+
+    public void FinishHandheldSwap()
+    {
+        // make next weapon the current weapon
+        currentSlot = nextSlot;
+
+        // set current handheld references
+        switch (currentSlot)
+        {
+            case HandheldSlot.WeaponOne:
+                m_CurrentHandheldScriptableObject = WeaponOneMeta;
+                m_CurrentHandheldGameObject = WeaponOneObject;
+                m_CurrentHandheldInterface = WeaponOne;
+                break;
+            case HandheldSlot.WeaponTwo:
+                m_CurrentHandheldScriptableObject = WeaponTwoMeta;
+                m_CurrentHandheldGameObject = WeaponTwoObject;
+                m_CurrentHandheldInterface = WeaponTwo;
+                break;
+            case HandheldSlot.Sidearm:
+                m_CurrentHandheldScriptableObject = SidearmMeta;
+                m_CurrentHandheldGameObject = SidearmObject;
+                m_CurrentHandheldInterface = Sidearm;
+                break;
+            default:
+                break;
+        }
+
+        // tell it to equip
+        m_CurrentHandheldInterface.OnEquip();
     }
 
     #region InputActions
@@ -152,17 +267,13 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
      */
     public void OnSwapWeapons(InputAction.CallbackContext context)
     {
-        if (context.performed)
+        // figure this out?
+        wantToSwap = context.ReadValueAsButton();
+
+        if (!wantToSwap && swapTime < swapThreshold)
         {
-            m_NextHandheldIndex = m_CurrentHandheldIndex;
-            m_NextHandheldIndex += 1 *(int)Mathf.Sign(context.ReadValue<float>());
-            m_NextHandheldIndex %= EquipableHandhelds.Count;
-
-            m_CurrentHandheldInterface.OnUnequip();
+            StartHandheldSwap(false);
         }
-
-        if (m_CurrentHandheldInterface != null)
-            m_CurrentHandheldInterface.OnSwapWeapons(context);
     }
 
     public void OnScrollThroughWeapons(InputAction.CallbackContext context)
@@ -178,11 +289,6 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
     }
 
     #endregion
-
-    public void OnStow()
-    {
-        SwitchHandheld(EquipableHandhelds[m_NextHandheldIndex]);
-    }
 }
 
 public enum HandheldSlot
@@ -193,4 +299,20 @@ public enum HandheldSlot
     Pickup,
     None,
     Size
+}
+
+public enum InventoryAction
+{
+    Weapon,
+    Grenade,
+    Syringe,
+    Disable,
+    Size
+}
+
+public class EquipmentInfo
+{
+    public GameObject Equipment;
+    public int MaxCount;
+    public int Count;
 }

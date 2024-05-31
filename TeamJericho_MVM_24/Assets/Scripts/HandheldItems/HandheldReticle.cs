@@ -8,6 +8,7 @@ public class HandheldReticle : MonoBehaviour
     private Color defaultColor;
     private Color enemyColor;
     private Color friendlyColor;
+    private CanvasGroup ReticleGroup;
 
     [Header("Base Stuff")]
     [SerializeField] private Image Reticle;
@@ -15,13 +16,18 @@ public class HandheldReticle : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        SetVisibility(false);
     }
 
     // Update is called once per frame
     void Update()
     {
 
+    }
+
+    public void SetVisibility(bool visible)
+    {
+        ReticleGroup.alpha = visible ? 1 : 0;
     }
 
     public void OnCreateReticle(Color Default, Color Enemy, Color Friendly)
