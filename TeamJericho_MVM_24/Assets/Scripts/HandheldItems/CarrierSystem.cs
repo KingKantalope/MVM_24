@@ -195,6 +195,8 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
                 m_CurrentHandheldGameObject = SidearmObject;
                 m_CurrentHandheldInterface = Sidearm;
                 break;
+            case HandheldSlot.Pickup:
+                break;
             default:
                 break;
         }

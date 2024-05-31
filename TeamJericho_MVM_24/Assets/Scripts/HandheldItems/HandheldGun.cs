@@ -621,6 +621,19 @@ public class HandheldGun : MonoBehaviour, IHandheldObject
     }
 
     #endregion
+
+    #region GunInterruption
+    public void OnStartInteruption()
+    {
+        currentAction = GunAction.Interrupted;
+    }
+
+    public void OnStopInteruption()
+    {
+
+        currentAction = GunAction.Idle;
+    }
+    #endregion GunInterruption
 }
 
 public enum GunAction
@@ -631,5 +644,6 @@ public enum GunAction
     Meleeing,
     Equipping,
     Stowing,
-    Stowed
+    Stowed,
+    Interrupted
 }

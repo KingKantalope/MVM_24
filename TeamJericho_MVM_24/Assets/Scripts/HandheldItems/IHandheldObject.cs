@@ -12,4 +12,6 @@ public interface IHandheldObject : Controls.IPlayerActions
     void OnAttachedReticle(HandheldReticle handheldReticle);
     void OnEquip();
     void OnUnequip();
+    void OnStartInteruption();
+    void OnStopInteruption();
 }
