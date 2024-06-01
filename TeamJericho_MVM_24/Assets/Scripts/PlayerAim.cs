@@ -72,7 +72,6 @@ public class PlayerAim : MonoBehaviour
     void Update()
     {
         HandleRecoil();
-        playerHUD.SetHUDRectTransformValues(Vector2.zero, 0f); // change these arguments!!!
 
         // zooming
         if (cam.fieldOfView != defaultFieldOfView * targetZoom)

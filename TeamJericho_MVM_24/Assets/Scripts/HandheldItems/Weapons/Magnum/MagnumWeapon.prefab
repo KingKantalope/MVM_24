@@ -103,6 +103,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1869071014928741948}
   - component: {fileID: 4488860942635767290}
+  - component: {fileID: 6600119158239066068}
   m_Layer: 0
   m_Name: MagnumWeapon
   m_TagString: Untagged
@@ -141,9 +142,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 485d37b449e574c48ae0f65ff2ae10b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GunAnimator: {fileID: 0}
+  GunAnimator: {fileID: 6600119158239066068}
+  MeshRender: {fileID: 0}
+  SkinnedMeshRender: {fileID: 7392999777870973117}
   ammoDisplayObject: {fileID: 9138324159257176750, guid: 39270e1f9b8780440ac3dc3e14e7dfe3, type: 3}
-  reticleDisplayObject: {fileID: 0}
+  reticleDisplayObject: {fileID: 3116462331036430437, guid: df597caecddcaec4aaef06f56a719570, type: 3}
   displayImage: {fileID: 21300000, guid: 03bb7b4a94012954bbade2516b090221, type: 3}
   isAutomatic: 0
   attackDelay: 0
@@ -187,6 +190,27 @@ MonoBehaviour:
   assistMaxFriction: 0
   assistMaxMagnetism: 0
   autoMaxAngle: 0.2
+--- !u!95 &6600119158239066068
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5045898542322844519}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 39ef61af4ad92e14ebdd90d84c4bc800, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &8378932721231540361
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -235,6 +259,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7863631526180833228, guid: f873e21fe99b74047aa1af170aa7f4ca, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: f873e21fe99b74047aa1af170aa7f4ca, type: 3}
       propertyPath: m_Name
       value: SK_Magnum_Idle
@@ -267,11 +295,28 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.x
       value: -90
       objectReference: {fileID: 0}
+    - target: {fileID: 4624133555708937358, guid: f873e21fe99b74047aa1af170aa7f4ca, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4624133555708937358, guid: f873e21fe99b74047aa1af170aa7f4ca, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4624133555708937358, guid: f873e21fe99b74047aa1af170aa7f4ca, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f873e21fe99b74047aa1af170aa7f4ca, type: 3}
+--- !u!137 &7392999777870973117 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7863631526180833228, guid: f873e21fe99b74047aa1af170aa7f4ca, type: 3}
+  m_PrefabInstance: {fileID: 8378932721231540361}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8344408800313890658 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: f873e21fe99b74047aa1af170aa7f4ca, type: 3}

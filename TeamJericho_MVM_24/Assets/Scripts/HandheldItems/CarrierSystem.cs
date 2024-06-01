@@ -48,9 +48,9 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
     [SerializeField] private int SyringeCount;
 
 
-    private void Awake()
+    private void Start()
     {
-        
+        InitializeLoadout();
     }
 
     private void Update()
@@ -100,7 +100,9 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
             m_CurrentHandheldGameObject = WeaponOneObject;
             m_CurrentHandheldInterface = WeaponOne;
         }
-        if (WeaponOneMeta != null)
+        else Debug.Log("WeaponOne is null!");
+
+        if (WeaponTwoMeta != null)
         {
             WeaponTwoObject = Instantiate(WeaponTwoMeta.HandheldPrefab, RigSocket, true);
             WeaponTwoObject.transform.localPosition = Vector3.zero;
@@ -122,7 +124,9 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
                 m_CurrentHandheldInterface = WeaponTwo;
             }
         }
-        if (WeaponOneMeta != null)
+        else Debug.Log("WeaponTwo is null!");
+
+        if (SidearmMeta != null)
         {
             SidearmObject = Instantiate(SidearmMeta.HandheldPrefab, RigSocket, true);
             SidearmObject.transform.localPosition = Vector3.zero;
@@ -143,6 +147,14 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
                 m_CurrentHandheldGameObject = SidearmObject;
                 m_CurrentHandheldInterface = Sidearm;
             }
+        }
+        else Debug.Log("Sidearm is null!");
+
+        if (currentSlot != HandheldSlot.None)
+        {
+            // equip weapon
+            RigAnimator.runtimeAnimatorController = m_CurrentHandheldScriptableObject.ArmController;
+            m_CurrentHandheldInterface.OnEquip();
         }
     }
 

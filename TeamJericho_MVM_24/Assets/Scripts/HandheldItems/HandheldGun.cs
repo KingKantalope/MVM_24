@@ -17,7 +17,7 @@ public class HandheldGun : MonoBehaviour, IHandheldObject
 
     [Header("Gun Visuals")]
     [SerializeField] private Animator GunAnimator;
-    [SerializeField] private MeshRenderer MeshRender;
+    [SerializeField] private SkinnedMeshRenderer SkinnedMeshRender;
 
     [Header("HUD Elements")]
     [SerializeField] private GameObject ammoDisplayObject;
@@ -228,16 +228,6 @@ public class HandheldGun : MonoBehaviour, IHandheldObject
 
         reticleDisplay = reticleObject.GetComponent<HandheldReticle>();
         ammoDisplay = ammoObject.GetComponent<HandheldDisplay>();
-    }
-
-    public void OnAttachedDisplay(HandheldDisplay handheldDisplay)
-    {
-        //ammoDisplay = handheldDisplay;
-    }
-
-    public void OnAttachedReticle(HandheldReticle handheldReticle)
-    {
-        reticleDisplay = handheldReticle;
     }
 
     #region InputActions
@@ -494,13 +484,14 @@ public class HandheldGun : MonoBehaviour, IHandheldObject
 
     public void OnEquip()
     {
+        Debug.Log("Gun has been told to start equipping!");
         if (currentAction != GunAction.Equipping)
         {
             m_CarrierSystem.GetAnimator().SetTrigger("Equip");
             GunAnimator.SetTrigger("Equip");
 
             // turn model visible
-            MeshRender.enabled = true;
+            SkinnedMeshRender.enabled = true;
 
             currentAction = GunAction.Equipping;
             switchTime = EquipDuration;
@@ -551,7 +542,7 @@ public class HandheldGun : MonoBehaviour, IHandheldObject
         else if (currentAction == GunAction.Stowing)
         {
             // turn model invisible
-            MeshRender.enabled = false;
+            SkinnedMeshRender.enabled = false;
 
             m_CarrierSystem.FinishHandheldSwap();
             currentAction = GunAction.Stowed;

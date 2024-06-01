@@ -103,11 +103,6 @@ public class PlayerHUD : MonoBehaviour
         MainHUDParent.anchoredPosition = new Vector2(0f,HUDOffset);
     }
 
-    public virtual void SetHUDRectTransformValues(Vector2 posOffset, float rotOffset)
-    {
-        
-    }
-
     public void SpawnDamageIndicator(Vector3 source, float intensity)
     {
         // check if an indicator already exists for this source

@@ -8,8 +8,6 @@ public interface IHandheldObject : Controls.IPlayerActions
     void OnAttachedAim(PlayerAim attachedAim);
     void OnAttachedMeleeCollider(CapsuleCollider MeleeCollider);
     void OnAttachedHUD(PlayerHUD playerHUD);
-    void OnAttachedDisplay(HandheldDisplay handheldDisplay);
-    void OnAttachedReticle(HandheldReticle handheldReticle);
     void OnEquip();
     void OnUnequip();
     void OnStartInteruption();
