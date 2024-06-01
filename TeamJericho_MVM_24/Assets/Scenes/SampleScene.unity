@@ -1592,6 +1592,11 @@ RectTransform:
   m_AnchoredPosition: {x: 150, y: -150}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &223205704 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 553c5a76c259f294ebe7a9efa5ac8f03, type: 3}
+  m_PrefabInstance: {fileID: 1160544139}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &267259633
 GameObject:
   m_ObjectHideFlags: 0
@@ -9662,13 +9667,37 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -4894075692943157059, guid: 553c5a76c259f294ebe7a9efa5ac8f03, type: 3}
       insertIndex: -1
       addedObject: {fileID: 891711074}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 553c5a76c259f294ebe7a9efa5ac8f03, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1160544141}
   m_SourcePrefab: {fileID: 100100000, guid: 553c5a76c259f294ebe7a9efa5ac8f03, type: 3}
 --- !u!4 &1160544140 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 553c5a76c259f294ebe7a9efa5ac8f03, type: 3}
   m_PrefabInstance: {fileID: 1160544139}
   m_PrefabAsset: {fileID: 0}
+--- !u!95 &1160544141
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 223205704}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 0}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!224 &1175621037 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5412616794006978509, guid: 39270e1f9b8780440ac3dc3e14e7dfe3, type: 3}
@@ -12023,6 +12052,7 @@ GameObject:
   - component: {fileID: 1550371637}
   - component: {fileID: 1550371638}
   - component: {fileID: 1550371639}
+  - component: {fileID: 1550371640}
   m_Layer: 0
   m_Name: PlayerCharacter
   m_TagString: Untagged
@@ -12148,9 +12178,7 @@ MonoBehaviour:
   defaultGravity: -12
   maxSlopeAngle: 45
   normalForce: 0.3
-  whatIsGround:
-    serializedVersion: 2
-    m_Bits: 8
+  groundDetection: {fileID: 1567238588}
   climbSpeed: 6.5
   minClimbAngle: 75
   maxClimbAngle: 105
@@ -12171,6 +12199,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1498227292}
+  - {fileID: 1567238590}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1550371636
@@ -12463,22 +12492,108 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   RigSocket: {fileID: 1953369775}
-  SlingSocketOne: {fileID: 0}
-  SlingSocketTwo: {fileID: 0}
-  SidearmSocket: {fileID: 0}
-  EquipmentSocket: {fileID: 0}
-  RigAnimator: {fileID: 0}
-  CameraController: {fileID: 0}
+  RigAnimator: {fileID: 1160544141}
   Movement: {fileID: 1550371634}
   MeleeCollider: {fileID: 0}
   playerHUD: {fileID: 1401764219}
   playerAim: {fileID: 1550371633}
-  FragMaxCount: 0
-  MoverMaxCount: 0
-  PhosphorusMaxCount: 0
-  BismuthMaxCount: 0
-  EquipableHandhelds:
-  - {fileID: 11400000, guid: 151c1741e32a9b84baff5b7f9dd1a4b5, type: 2}
+  startingSlot: 4
+  WeaponOneMeta: {fileID: 0}
+  WeaponTwoMeta: {fileID: 0}
+  SidearmMeta: {fileID: 0}
+  swapThreshold: 0.6
+  SyringeMaxCount: 0
+  SyringeCount: 0
+--- !u!135 &1550371640
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1550371630}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.4
+  m_Center: {x: 0, y: -0.7, z: 0}
+--- !u!1 &1567238587
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1567238590}
+  - component: {fileID: 1567238588}
+  - component: {fileID: 1567238589}
+  m_Layer: 0
+  m_Name: GroundDetection
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1567238588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1567238587}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ae261888e4bf204ba83c9bd5b153229, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  whatIsGround:
+    serializedVersion: 2
+    m_Bits: 8
+--- !u!135 &1567238589
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1567238587}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.4
+  m_Center: {x: 0, y: -0.7, z: 0}
+--- !u!4 &1567238590
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1567238587}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1550371635}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1592132451
 GameObject:
   m_ObjectHideFlags: 0
@@ -14515,14 +14630,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage:
-    baseDamage: 15
-    shieldMulti: 1
-    armorMulti: 3
+    baseDamage: 20
+    shieldMulti: 100
+    armorMulti: 0.001
     critMulti: 1
     penetrationLevel: 20
     isCrit: 0
     canInstakill: 0
-    critBonus: 5
+    critBonus: 1
 --- !u!65 &2041497976
 BoxCollider:
   m_ObjectHideFlags: 0

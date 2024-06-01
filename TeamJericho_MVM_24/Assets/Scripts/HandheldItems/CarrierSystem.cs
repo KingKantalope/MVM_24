@@ -176,6 +176,7 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
     {
         // make next weapon the current weapon
         currentSlot = nextSlot;
+        playerHUD.SetActiveHandheld(currentSlot);
 
         // set current handheld references
         switch (currentSlot)

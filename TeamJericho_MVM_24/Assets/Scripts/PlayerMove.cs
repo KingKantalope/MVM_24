@@ -167,7 +167,7 @@ public class PlayerMove : MonoBehaviour
         }
 
         // raycast to find ground
-        if (Physics.Raycast(transform.position, -transform.up, out hit, (playerCollider.height / 2) + 0.2f, whatIsGround))
+        if (Physics.Raycast(transform.position, -transform.up, out hit, 1.2f, whatIsGround))
         {
             // save normal of surface
             NetNormal += hit.normal;
@@ -206,6 +206,7 @@ public class PlayerMove : MonoBehaviour
 
             if (velocityChange.y > 0f) velocityChange.y = 0f;
 
+            // figure out better solution to below
             velocityChange -= slopeNormal.normalized * normalForce;
 
             // change move velocity
@@ -230,6 +231,7 @@ public class PlayerMove : MonoBehaviour
             float magnitude = Mathf.Max((crouching ? crouchSpeed : playerSpeed),LateralVelocity.magnitude);
             TargetVelocity = Vector3.ClampMagnitude(TargetVelocity, magnitude);
 
+            // figure out better solution to below
             velocityChange = TargetVelocity - LateralVelocity;
 
             // change move velocity
