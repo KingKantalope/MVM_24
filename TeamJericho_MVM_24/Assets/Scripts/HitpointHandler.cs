@@ -329,92 +329,23 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
         }
     }
 
-    /*
-    public HitpointType MainDamage(Damage damage)
+    public void Heal(float amount)
     {
-        // what needs to happen: reset hemorrhage ticks, deal damage to shields->armor->health
-        // get damage values
-        float individualDMG = 0f;
-        int netPenetration;
-        float armorDMG = 0f, bleedthrough = 0f;
-        
-        // shields first
-        if (currentShields > 0f)
-        {
-            individualDMG = damage.baseDamage * damage.shieldMulti;
+        currentHealth = Mathf.Clamp(currentHealth + amount, 0f, maxHealth);
+        OnChangeHealth?.Invoke(currentHealth, maxHealth);
+    }
 
-            if (individualDMG >= currentShields)
-            {
-                damage.baseDamage -= currentShields;
-                currentShields = 0f;
-                rechargeTime = rechargeDelay;
-            }
-            else
-            {
-                currentShields -= (individualDMG / damage.shieldMulti);
-                rechargeTime = rechargeDelay;
-                return HitpointType.shields;
-            }
-        }
+    public void Fortify(float amount)
+    {
+        currentArmor = Mathf.Clamp(currentArmor + amount, 0f, maxArmor);
+        OnChangeArmor?.Invoke(currentArmor, maxArmor, protectionLevel, armorWeakening);
+    }
 
-        // armor second
-        if (currentArmor > 0f)
-        {
-            netPenetration = damage.penetrationLevel - protectionLevel + armorWeakening;
-            
-            if (netPenetration <= 0)
-            {
-                armorDMG = damage.baseDamage * Mathf.Clamp((float)(Mathf.Abs(netPenetration) / 4),0.25f, 1f);                
-            }
-            else
-            {
-                armorDMG = damage.baseDamage;
-                bleedthrough += damage.baseDamage * Mathf.Clamp((float)(4 - Mathf.Abs(netPenetration) / 4),0f, 1f);
-            }
-
-            individualDMG = armorDMG * damage.armorMulti;
-
-            if (individualDMG >= currentArmor)
-            {
-                damage.baseDamage = Mathf.Clamp(damage.baseDamage - currentArmor + bleedthrough, 0f, damage.baseDamage);
-                currentArmor = 0f;
-            }
-            else if (bleedthrough <= 0f)
-            {
-                currentArmor -= (individualDMG / damage.armorMulti);
-                return HitpointType.armor;
-            }
-        }
-
-        // health last
-        damage.baseDamage *= damage.healthMulti;
-
-        // don't forget crits!
-        if (damage.isCrit)
-        {
-            if (critsInstakill)
-            {
-                damage.baseDamage *= Mathf.Pow(10f,30f);
-            }
-            else
-            {
-                damage.baseDamage *= damage.critMulti;
-            }
-        }
-
-        if (damage.baseDamage >= currentHealth)
-        {
-            currentHealth = 0f;
-
-            OnDeath();
-            return HitpointType.health;
-        }
-        else
-        {
-            currentHealth -= damage.baseDamage;
-            return HitpointType.health;
-        }
-    } */
+    public void Charge(float amount)
+    {
+        currentShields = Mathf.Clamp(currentShields + amount, 0f, maxShields);
+        OnChangeShields?.Invoke(currentShields, maxShields);
+    }
 
     public void OffsetPoise(int stagger)
     {

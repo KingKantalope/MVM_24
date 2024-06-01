@@ -14,6 +14,7 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
     [SerializeField] private CapsuleCollider MeleeCollider;
     [SerializeField] private PlayerHUD playerHUD;
     [SerializeField] private PlayerAim playerAim;
+    [SerializeField] private PlayerHitpoints playerHitpoints;
 
     [Header("Weapons")]
     [SerializeField] private HandheldSlot startingSlot = HandheldSlot.None;
@@ -33,6 +34,7 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
     private GameObject SidearmObject;
     private HandheldSlot currentSlot = HandheldSlot.None;
     private HandheldSlot nextSlot = HandheldSlot.None;
+    private InventoryAction currentAction = InventoryAction.Weapon;
 
     // swap input variables
     [SerializeField] private float swapThreshold = 0.6f;
@@ -46,6 +48,13 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
     [Header("Healing Syringes")]
     [SerializeField] private int SyringeMaxCount;
     [SerializeField] private int SyringeCount;
+    [SerializeField] private float syringeDelay = 0.4f;
+    [SerializeField] private float syringeDuration = 0.8f;
+    [SerializeField] private float syringeEnd = 0.3f;
+    [SerializeField] private float syringeHealRate = 50f;
+    private float syringeTime = 0f;
+    private bool isInjecting = false;
+    private bool hasInjected = false;
 
 
     private void Start()
@@ -68,6 +77,48 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
             else
             {
                 swapTime += Time.deltaTime;
+            }
+        }
+    }
+
+    public void SyringeUpdate()
+    {
+        // syringeDelay -> syringeDuration -> syringeEnd
+        if (hasInjected)
+        {
+            // cooldown after injection
+            if (syringeTime > 0f) syringeTime -= Time.deltaTime;
+            else
+            {
+                hasInjected = false;
+                isInjecting = false;
+                currentAction = InventoryAction.Weapon;
+            }
+        }
+        else if (isInjecting)
+        {
+            // duration of injection
+            if (syringeTime > 0f)
+            {
+                syringeTime -= Time.deltaTime;
+
+                // tell HitpointHandler to heal based on rate
+                playerHitpoints.Heal(syringeHealRate * Time.deltaTime);
+            }
+            else
+            {
+                hasInjected = true;
+                syringeTime = syringeDuration;
+            }
+        }
+        else
+        {
+            // delay before injection
+            if (syringeTime > 0f) syringeTime -= Time.deltaTime;
+            else
+            {
+                isInjecting = true;
+                syringeTime = syringeDuration;
             }
         }
     }
@@ -224,7 +275,7 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
      */
     public void OnAltFire(InputAction.CallbackContext context)
     {
-        if (m_CurrentHandheldInterface != null)
+        if (m_CurrentHandheldInterface != null && currentAction == InventoryAction.Weapon)
             m_CurrentHandheldInterface.OnAltFire(context);
     }
 
@@ -240,7 +291,7 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
      */
     public void OnFire(InputAction.CallbackContext context)
     {
-        if (m_CurrentHandheldInterface != null)
+        if (m_CurrentHandheldInterface != null && currentAction == InventoryAction.Weapon)
             m_CurrentHandheldInterface.OnFire(context);
     }
 
@@ -248,32 +299,39 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
      */
     public void OnJump(InputAction.CallbackContext context)
     {
-        if (m_CurrentHandheldInterface != null)
-            m_CurrentHandheldInterface.OnJump(context);
+        // animator stuff
     }
 
     /* Only necessary for animator
      */
     public void OnLook(InputAction.CallbackContext context)
     {
-        if (m_CurrentHandheldInterface != null)
-            m_CurrentHandheldInterface.OnLook(context);
+        // animator stuff
     }
 
     /* Only necessary for animator
      */
     public void OnMove(InputAction.CallbackContext context)
     {
-        if (m_CurrentHandheldInterface != null)
-            m_CurrentHandheldInterface.OnMove(context);
+        // animator stuff
     }
 
     /* Just pass through to the handheld object
      */
     public void OnReload(InputAction.CallbackContext context)
     {
-        if (m_CurrentHandheldInterface != null)
+        if (m_CurrentHandheldInterface != null && currentAction == InventoryAction.Weapon)
             m_CurrentHandheldInterface.OnReload(context);
+    }
+
+    public void OnUseSyringe(InputAction.CallbackContext context)
+    {
+        // check if there are any syringes to use
+        if (SyringeCount > 0 && currentAction == InventoryAction.Weapon)
+        {
+            currentAction = InventoryAction.Syringe;
+            syringeTime = syringeDelay;
+        }
     }
 
     /* This function needs to account for the two main weapons + sidearm system
@@ -299,7 +357,7 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
 
     public void OnMelee(InputAction.CallbackContext context)
     {
-        if (m_CurrentHandheldInterface != null)
+        if (m_CurrentHandheldInterface != null && currentAction == InventoryAction.Weapon)
             m_CurrentHandheldInterface.OnMelee(context);
     }
 
@@ -321,6 +379,7 @@ public enum InventoryAction
     Weapon,
     Grenade,
     Syringe,
+    Melee,
     Disable,
     Size
 }
