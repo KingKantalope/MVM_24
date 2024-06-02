@@ -42,7 +42,6 @@ public class PlayerMove : MonoBehaviour
     private float coyoteCurrent = 0f;
     public int jumpsMax = 1;
     private int jumpCount = 0;
-    private bool canJump;
     public float jumpCooldown = 0.2f;
     private float jumpTime = 0f;
 
@@ -67,7 +66,7 @@ public class PlayerMove : MonoBehaviour
 
     public void SetFrostSlowdown(float slowdown)
     {
-        frostSlowdown = slowdown;
+        frostSlowdown = ((100f - slowdown) / 100f);
         Debug.Log("frostSlowdown: " + frostSlowdown);
     }
 
@@ -79,7 +78,10 @@ public class PlayerMove : MonoBehaviour
     {
         wantToJump = context.ReadValueAsButton();
         
-        if (jumpCount < jumpsMax && wantToJump && jumpTime > jumpCooldown) Jump();
+        if ((grounded || coyoteCurrent < coyoteTime || jumpCount < jumpsMax)
+            && wantToJump
+            && jumpTime > jumpCooldown)
+            Jump();
     }
     public void OnCrouch(InputAction.CallbackContext context)
     {
@@ -172,7 +174,6 @@ public class PlayerMove : MonoBehaviour
         Vector3 hitNormal = Vector3.zero;
         RaycastHit hit;
         grounded = false;
-        canJump = false;
 
         if (collisions.Count > 0)
         {
@@ -202,7 +203,6 @@ public class PlayerMove : MonoBehaviour
         if (NetNormal != Vector3.zero)
         {
             grounded = true;
-            canJump = true;
             slopeNormal = NetNormal.normalized;
             slopeAngle = Vector3.Angle(Vector3.up, slopeNormal);
             coyoteCurrent = 0f;
@@ -212,17 +212,10 @@ public class PlayerMove : MonoBehaviour
         else if (hitNormal != Vector3.zero)
         {
             grounded = true;
-            canJump = true;
             slopeNormal = NetNormal.normalized;
             slopeAngle = Vector3.Angle(Vector3.up, slopeNormal);
             coyoteCurrent = 0f;
         }
-        else if (coyoteCurrent < coyoteTime)
-        {
-            canJump = true;
-        }
-
-        if (coyoteCurrent < coyoteTime) Debug.Log("coyoteCurrent: " + coyoteCurrent);
 
         coyoteCurrent += Time.fixedDeltaTime;
 
@@ -300,14 +293,14 @@ public class PlayerMove : MonoBehaviour
     {
         Vector3 jumpForces = rb.velocity;
 
-        float jumpVelocity = Mathf.Sqrt(jumpHeight * -2f * Physics.gravity.y * (crouching ? jumpCrouchMulti : 1f));
+        float jumpVelocity =
+            Mathf.Sqrt(jumpHeight * frostSlowdown * -2f * Physics.gravity.y * (crouching ? jumpCrouchMulti : 1f));
 
         jumpForces.y = jumpVelocity;
 
         rb.velocity = jumpForces;
 
-        jumpCount++;
-
+        if (!grounded && coyoteCurrent >= coyoteTime) jumpCount++;
         jumpTime = 0f;
     }
 

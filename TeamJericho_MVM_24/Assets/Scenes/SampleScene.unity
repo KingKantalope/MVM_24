@@ -12050,7 +12050,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   coyoteTime: 0.15
-  jumpsMax: 2
+  jumpsMax: 0
   jumpCooldown: 0.2
   climbSpeed: 6.5
   minClimbAngle: 75
