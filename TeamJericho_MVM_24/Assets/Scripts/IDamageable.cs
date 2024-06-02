@@ -15,6 +15,9 @@ public interface IDamageable
     void SetHemorrhage(Hemorrhage level);
     void SetShock(bool newShocked);
     string GetActorID();
+    (float, float) GetHealth();
+    (float, float, int) GetArmor();
+    (float, float) GetShields();
     float GetPoise();
     float GetRadiation();
     float GetFrost();

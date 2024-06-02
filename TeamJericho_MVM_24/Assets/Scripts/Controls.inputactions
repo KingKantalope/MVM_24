@@ -78,13 +78,13 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Scroll Through Weapons",
-                    "type": "Value",
+                    "name": "Syringe",
+                    "type": "Button",
                     "id": "0529d7c3-12a7-42f5-af38-c79762dce8af",
-                    "expectedControlType": "",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": true
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Melee",
@@ -418,12 +418,34 @@
                 },
                 {
                     "name": "",
-                    "id": "46f945de-0191-4f3d-8703-cca384cb0bf8",
-                    "path": "<Mouse>/scroll",
+                    "id": "88bab4ec-61e6-4478-ba3d-7ffc083ed45c",
+                    "path": "<Keyboard>/q",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Scroll Through Weapons",
+                    "action": "Swap Weapons",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7b364f73-6af6-429f-80e6-3d86a2875c9b",
+                    "path": "<Gamepad>/dpad/up",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Syringe",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "46f945de-0191-4f3d-8703-cca384cb0bf8",
+                    "path": "<Keyboard>/x",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Syringe",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

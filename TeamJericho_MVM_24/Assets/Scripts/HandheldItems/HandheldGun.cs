@@ -614,14 +614,22 @@ public class HandheldGun : MonoBehaviour, IHandheldObject
     #endregion
 
     #region GunInterruption
-    public void OnStartInteruption()
+    public void OnStartInterruption(bool isGrenade)
     {
         currentAction = GunAction.Interrupted;
+
+        if (isGrenade)
+        {
+            // play grenade throw animation
+        }
+        else
+        {
+            // play injection animation
+        }
     }
 
-    public void OnStopInteruption()
+    public void OnStopInterruption()
     {
-
         currentAction = GunAction.Idle;
     }
     #endregion GunInterruption

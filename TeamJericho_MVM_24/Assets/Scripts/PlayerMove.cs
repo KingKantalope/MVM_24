@@ -38,6 +38,13 @@ public class PlayerMove : MonoBehaviour
     public float maxSlopeAngle = 45.0f;
     public float normalForce = 0.1f;
     public LayerMask whatIsGround = LayerMask.GetMask("Ground");
+    public float coyoteTime = 0.15f;
+    private float coyoteCurrent = 0f;
+    public int jumpsMax = 1;
+    private int jumpCount = 0;
+    private bool canJump;
+    public float jumpCooldown = 0.2f;
+    private float jumpTime = 0f;
 
     // climbing
     public float climbSpeed = 6.0f;
@@ -55,6 +62,15 @@ public class PlayerMove : MonoBehaviour
 
     public List<gravityPair> GravityList;
 
+    // temporary holds
+    private float frostSlowdown;
+
+    public void SetFrostSlowdown(float slowdown)
+    {
+        frostSlowdown = slowdown;
+        Debug.Log("frostSlowdown: " + frostSlowdown);
+    }
+
     public void OnMove(InputAction.CallbackContext context)
     {
         moveInput = context.ReadValue<Vector2>();
@@ -63,7 +79,7 @@ public class PlayerMove : MonoBehaviour
     {
         wantToJump = context.ReadValueAsButton();
         
-        if (grounded && wantToJump) Jump();
+        if (jumpCount < jumpsMax && wantToJump && jumpTime > jumpCooldown) Jump();
     }
     public void OnCrouch(InputAction.CallbackContext context)
     {
@@ -80,6 +96,14 @@ public class PlayerMove : MonoBehaviour
         playerCollider = GetComponent<CapsuleCollider>();
         rb.sleepThreshold = minVelocity;
         rb.useGravity = false;
+        frostSlowdown = 1f;
+        jumpTime = 0f;
+    }
+
+    private void Update()
+    {
+        jumpTime += Time.deltaTime;
+        Debug.Log("jumpTime: " + jumpTime);
     }
 
     // Update is called once per frame
@@ -145,8 +169,10 @@ public class PlayerMove : MonoBehaviour
     {
         // get all contact points with collider, find all with hits with a slope below minimum, average them
         Vector3 NetNormal = Vector3.zero;
+        Vector3 hitNormal = Vector3.zero;
         RaycastHit hit;
         grounded = false;
+        canJump = false;
 
         if (collisions.Count > 0)
         {
@@ -170,15 +196,35 @@ public class PlayerMove : MonoBehaviour
         if (Physics.Raycast(transform.position, -transform.up, out hit, 1.2f, whatIsGround))
         {
             // save normal of surface
-            NetNormal += hit.normal;
+            hitNormal = hit.normal;
         }
 
         if (NetNormal != Vector3.zero)
         {
             grounded = true;
+            canJump = true;
             slopeNormal = NetNormal.normalized;
             slopeAngle = Vector3.Angle(Vector3.up, slopeNormal);
+            coyoteCurrent = 0f;
+
+            if (jumpTime > jumpCooldown) jumpCount = 0;
         }
+        else if (hitNormal != Vector3.zero)
+        {
+            grounded = true;
+            canJump = true;
+            slopeNormal = NetNormal.normalized;
+            slopeAngle = Vector3.Angle(Vector3.up, slopeNormal);
+            coyoteCurrent = 0f;
+        }
+        else if (coyoteCurrent < coyoteTime)
+        {
+            canJump = true;
+        }
+
+        if (coyoteCurrent < coyoteTime) Debug.Log("coyoteCurrent: " + coyoteCurrent);
+
+        coyoteCurrent += Time.fixedDeltaTime;
 
         collisions.Clear();
     }
@@ -200,6 +246,8 @@ public class PlayerMove : MonoBehaviour
 
             // get target velocity
             TargetVelocity *= (crouching ? crouchSpeed : playerSpeed);
+            TargetVelocity *= frostSlowdown;
+            Debug.Log("frostSlowdown: " + frostSlowdown);
 
             velocityChange = (TargetVelocity - LateralVelocity).normalized;
             velocityChange *= (crouching ? crouchAccel : playerAccel) * Time.fixedDeltaTime;
@@ -254,12 +302,13 @@ public class PlayerMove : MonoBehaviour
 
         float jumpVelocity = Mathf.Sqrt(jumpHeight * -2f * Physics.gravity.y * (crouching ? jumpCrouchMulti : 1f));
 
-        if (grounded)
-        {
-            jumpForces.y = jumpVelocity;
-        }
+        jumpForces.y = jumpVelocity;
 
         rb.velocity = jumpForces;
+
+        jumpCount++;
+
+        jumpTime = 0f;
     }
 
     private void Climb()

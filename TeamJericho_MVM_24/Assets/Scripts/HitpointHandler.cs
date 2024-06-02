@@ -6,6 +6,7 @@ using UnityEngine.Events;
 public class PlayerHitpoints : MonoBehaviour, IDamageable
 {
     [SerializeField] private Actor thisActor;
+    [SerializeField] private PlayerMove playerMove;
 
     public UnityEvent<float, float> OnChangeHealth;
     public UnityEvent<float, float, int, int> OnChangeArmor;
@@ -39,7 +40,6 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
     private float currentHealth;
     private float amountHealed;
     private float healTime;
-    private bool isHealing;
 
     [Header("Poise")]
     [SerializeField] private float maxPoise;
@@ -143,6 +143,9 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
         if (meltTime <= 0f && currentFrost > 0f)
         {
             currentFrost -= meltRate * Time.deltaTime;
+
+            // tell playerMove the frost level
+            playerMove.SetFrostSlowdown((100f - currentFrost) / 100f);
         }
     }
 
@@ -158,7 +161,6 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
                     sutureTime = sutureTick;
                     currentHealth -= bleedDamageMajor;
                     healTime = healDelay;
-                    isHealing = true;
                     OnChangeHealth?.Invoke(currentHealth, maxHealth);
 
                     if (numTicksCurrent < numTicksMajor) numTicksCurrent++;
@@ -172,7 +174,6 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
                     sutureTime = sutureTick;
                     currentHealth -= bleedDamageMinor;
                     healTime = healDelay;
-                    isHealing = true;
                     OnChangeHealth?.Invoke(currentHealth, maxHealth);
 
                     if (numTicksCurrent < numTicksMinor) numTicksCurrent++;
@@ -230,9 +231,12 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
     {
         rechargeTime -= Time.deltaTime;
 
+        // decrease recharge rate based on radiation level
+        float radModifier = (100f - currentRadiation) / 100f;
+
         if (rechargeTime <= 0f && currentShields < maxShields)
         {
-            currentShields += netRechargeRate * Time.deltaTime;
+            currentShields += netRechargeRate * Time.deltaTime * radModifier;
 
             OnChangeShields?.Invoke(currentShields, maxShields);
         }
@@ -270,6 +274,9 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
             float armorDifference = (float)(damage.penetrationLevel + armorWeakening - protectionLevel) * 0.25f;
             float penetrationDamage = processedDamage * Mathf.Clamp(armorDifference, 0f, 0.75f);
             processedDamage *= Mathf.Clamp(armorDifference + 1f, 0.25f, 1f);
+
+            // radiation damage increase
+            processedDamage *= ((100f + currentRadiation) / 100f);
 
             // get normal over-damage
             outcomeDamage = Mathf.Clamp(processedDamage - currentArmor, 0f, processedDamage);
@@ -347,6 +354,21 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
         OnChangeShields?.Invoke(currentShields, maxShields);
     }
 
+    public (float, float) GetHealth()
+    {
+        return (currentHealth, maxHealth);
+    }
+
+    public (float, float, int) GetArmor()
+    {
+        return (currentArmor, maxArmor, protectionLevel - armorWeakening);
+    }
+
+    public (float, float) GetShields()
+    {
+        return (currentShields, maxShields);
+    }
+
     public void OffsetPoise(int stagger)
     {
         float newPoise = Mathf.Clamp(currentPoise + stagger, 0f, maxPoise);
@@ -386,6 +408,8 @@ public class PlayerHitpoints : MonoBehaviour, IDamageable
         }
 
         currentFrost = newFrost;
+
+        playerMove.SetFrostSlowdown((100f - currentFrost) / 100f);
     }
     
     public void SetHemorrhage(Hemorrhage level)

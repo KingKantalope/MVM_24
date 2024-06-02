@@ -44,6 +44,10 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
     [Header("Grenades and Equipment")]
     // create scripts for grenades
     [SerializeField] private EquipmentInfo currentEquipment;
+    [SerializeField] private float throwDelay = 0.15f;
+    [SerializeField] private float throwEnd = 0.75f;
+    private float throwTime = 0f;
+    private bool hasThrown = false;
 
     [Header("Healing Syringes")]
     [SerializeField] private int SyringeMaxCount;
@@ -55,7 +59,6 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
     private float syringeTime = 0f;
     private bool isInjecting = false;
     private bool hasInjected = false;
-
 
     private void Start()
     {
@@ -79,6 +82,15 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
                 swapTime += Time.deltaTime;
             }
         }
+
+        switch (currentAction)
+        {
+            case InventoryAction.Syringe:
+                SyringeUpdate();
+                break;
+            case InventoryAction.Grenade:
+                break;
+        }
     }
 
     public void SyringeUpdate()
@@ -93,6 +105,9 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
                 hasInjected = false;
                 isInjecting = false;
                 currentAction = InventoryAction.Weapon;
+                Debug.Log("Finished With Syringe!");
+
+                m_CurrentHandheldInterface.OnStopInterruption();
             }
         }
         else if (isInjecting)
@@ -104,6 +119,8 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
 
                 // tell HitpointHandler to heal based on rate
                 playerHitpoints.Heal(syringeHealRate * Time.deltaTime);
+
+                Debug.Log("Injecting Syringe!");
             }
             else
             {
@@ -119,6 +136,33 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
             {
                 isInjecting = true;
                 syringeTime = syringeDuration;
+                SyringeCount--;
+            }
+        }
+    }
+
+    public void ThrowUpdate()
+    {
+        if (hasThrown)
+        {
+            if (throwTime > 0f) throwTime -= Time.deltaTime;
+            else
+            {
+                hasThrown = false;
+                currentAction = InventoryAction.Weapon;
+                Debug.Log("Finished Throwing!");
+
+                m_CurrentHandheldInterface.OnStopInterruption();
+            }
+        }
+        else
+        {
+            if (throwTime > 0f) throwTime -= Time.deltaTime;
+            else
+            {
+                hasThrown = true;
+                throwTime = throwEnd;
+                currentEquipment.Count--;
             }
         }
     }
@@ -326,11 +370,33 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
 
     public void OnUseSyringe(InputAction.CallbackContext context)
     {
+        if (context.ReadValueAsButton() != true) return;
+
+        float currentHealth;
+        float maxHealth;
+        (currentHealth, maxHealth) = playerHitpoints.GetHealth();
+
         // check if there are any syringes to use
-        if (SyringeCount > 0 && currentAction == InventoryAction.Weapon)
+        if (SyringeCount > 0 && currentAction == InventoryAction.Weapon && currentHealth < maxHealth)
         {
             currentAction = InventoryAction.Syringe;
             syringeTime = syringeDelay;
+            m_CurrentHandheldInterface.OnStartInterruption(false);
+            Debug.Log("Drawing Out Syringe!");
+        }
+    }
+
+    public void OnUseEquipment(InputAction.CallbackContext context)
+    {
+        if (context.ReadValueAsButton() != false) return;
+
+        // check if there are any equipment to use
+        if (currentEquipment.Count > 0 || currentAction == InventoryAction.Weapon)
+        {
+            currentAction = InventoryAction.Grenade;
+            throwTime = throwDelay;
+            m_CurrentHandheldInterface.OnStartInterruption(true);
+            Debug.Log("Grabbing Equipment!");
         }
     }
 
@@ -340,7 +406,6 @@ public class CarrierSystem : MonoBehaviour, Controls.IPlayerActions
      */
     public void OnSwapWeapons(InputAction.CallbackContext context)
     {
-        // figure this out?
         wantToSwap = context.ReadValueAsButton();
 
         if (!wantToSwap && swapTime < swapThreshold)

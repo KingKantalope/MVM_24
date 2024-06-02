@@ -10,6 +10,6 @@ public interface IHandheldObject : Controls.IPlayerActions
     void OnAttachedHUD(PlayerHUD playerHUD);
     void OnEquip();
     void OnUnequip();
-    void OnStartInteruption();
-    void OnStopInteruption();
+    void OnStartInterruption(bool isGrenade);
+    void OnStopInterruption();
 }
